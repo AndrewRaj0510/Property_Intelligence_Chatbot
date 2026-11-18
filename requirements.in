@@ -1,0 +1,13 @@
+httpx
+selectolax
+beautifulsoup4
+lxml
+pydantic
+python-dotenv
+openai
+langchain-core
+langchain-openai
+langgraph
+qdrant-client
+langfuse
+streamlit

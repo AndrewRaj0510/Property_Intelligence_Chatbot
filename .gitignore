@@ -221,3 +221,27 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Project-specific ---
+# Local planning docs (kept out of the repo)
+plan.md
+architecture.md
+product_requirement_document.md
+
+# Claude Code local settings
+.claude/
+
+# Editor / OS clutter
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets and env variants (keep the template)
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Raw scrape caches (clean snapshot in data/ is committed)
+data/raw/cache/
