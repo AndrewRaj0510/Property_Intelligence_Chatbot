@@ -2,7 +2,7 @@
 
 An agentic RAG chatbot that answers natural-language questions about **DarGlobal** projects and **Wasalt** (Saudi Arabia) property listings, grounded in scraped public data, with a source link for every answer.
 
-> **Status:** work in progress. Phase 0 (setup) is complete. Scraping, indexing, agent, UI and deployment are next.
+> **Status:** work in progress. Phase 0 (setup) and Phase 1 (data) are complete. Indexing, agent, UI and deployment are next.
 
 ## How it works (planned)
 
@@ -63,9 +63,44 @@ python scripts/smoke_test.py --list-free  # list free OpenRouter models that sup
 
 The free model list on OpenRouter changes often; rerun the smoke test before relying on a model.
 
+## Data
+
+Rebuild the snapshot (about 2 minutes, 1 request/second):
+
+```bash
+python -m scraper.darglobal      # -> data/raw/darglobal.jsonl
+python -m scraper.darglobal_content   # -> company pages + news (Jan-Sep 2026)
+python -m scraper.wasalt         # -> data/raw/wasalt.jsonl   (add --details to also try listing pages)
+python -m ingestion.normalize    # -> data/clean/{projects,company,news,listings}.jsonl + data/clean/data_report.md
+```
+
+| Source | How it is collected | Clean rows | What is available |
+|---|---|---|---|
+| DarGlobal | `sitemap.xml` -> each project page -> embedded Next.js / Strapi JSON (`__NEXT_DATA__`) | 41 projects in 6 countries (Oman 13, UAE 11, Saudi Arabia 10, Spain 3, Qatar 2, UK 2), incl. 7 "One of One" properties | Name, city and country (100%), brand partner, property types (98%), status (46%), and text sections (about, features, amenities, why invest, location), median 2,600 characters per project |
+| DarGlobal company | About, partners + 11 partner pages, contact, FAQ, why-invest, investor relations, hospitality, development management, golf communities, commercial | 21 pages | 31 FAQ question-answer pairs, office addresses, role email addresses, partner overviews, board and company facts |
+| DarGlobal news | Press, blog and insights articles, kept only if published 1 Jan - 30 Sep 2026 (date from the CMS) | 23 articles (11 press, 12 blog) | Title, date, body; e.g. HY 2026 results, Trump Plaza Jeddah, Azure Oceanfront Villas launch |
+| Wasalt | English product sitemap on `cdn.wasalt.sa`, random sample of 300 (195 sale, 105 rent) | 300 listings | Purpose, property type (100%), bedrooms (74%), area (43%), URL |
+
+Data quality notes:
+
+- **No DarGlobal starting prices.** The CMS price field is empty for every project and prices are "on request", so `starting_price` is null.
+- **Wasalt listing pages sit behind a Cloudflare challenge** for non-browser clients (HTTP 403, `cf-mitigated: challenge`). The scraper does not try to get around it. Listing fields come from the URL slug only, so price, city, district and description are missing.
+- Wasalt slugs drop the decimal point in areas (158.88 sqm appears as `15888`). Areas above a plausible size for the property type are set to null.
+- One DarGlobal page (`/pre-launch-trump-jeddah-tower`) returned HTTP 500 on every retry and is skipped. One project listed under two URLs is deduplicated.
+
+The full report, with null rates and sample rows, is in `data/clean/data_report.md`.
+
 ## Project structure
 
 ```
+scraper/
+  common.py          # polite HTTP client: robots.txt, 1 req/s throttle, retries, challenge detection
+  darglobal.py       # DarGlobal project pages -> data/raw/darglobal.jsonl
+  darglobal_content.py  # DarGlobal company pages + Q1-Q3 2026 news
+  wasalt.py          # Wasalt sitemap sample -> data/raw/wasalt.jsonl
+ingestion/
+  normalize.py       # clean schema, dedupe, data quality report
+data/                # raw + clean snapshot (committed)
 scripts/
   smoke_test.py      # Phase 0 connectivity checks
 requirements.in      # direct dependencies
@@ -73,13 +108,15 @@ requirements.txt     # pinned dependencies (pip freeze)
 .env.example         # environment variable template
 ```
 
-Coming next: `scraper/`, `ingestion/`, `app/`, `eval/`, `Dockerfile`.
+Coming next: `ingestion/` (SQLite, Qdrant), `app/`, `eval/`, `Dockerfile`.
 
 ## Responsible scraping
 
 - robots.txt is respected (Wasalt `/search` is disallowed and is not crawled; listings come from published sitemaps)
 - About 1 request per second, identifiable User-Agent, capped volume
 - No personal data (agent names, phone numbers) is collected
+- Personal email addresses on the contact page are redacted; only role mailboxes (crm@, marketing@ ...) are kept
+- Bot challenges (Cloudflare, Incapsula) are not bypassed; on a challenge the scraper retries a few times politely, then stops
 
 ## Limitations
 

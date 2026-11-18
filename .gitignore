@@ -228,6 +228,12 @@ plan.md
 architecture.md
 product_requirement_document.md
 
+# Local context and logs for Claude Code sessions
+CLAUDE.md
+memory.md
+problems.md
+findings.md
+
 # Claude Code local settings
 .claude/
 
