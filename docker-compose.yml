@@ -1,0 +1,12 @@
+# Local run: docker compose up --build  ->  http://localhost:8501
+services:
+  chatbot:
+    build: .
+    image: property-chatbot:local
+    env_file: .env
+    environment:
+      PORT: "8501"
+    ports:
+      - "8501:8501"
+    mem_limit: 512m   # same ceiling as Render free tier
+    restart: unless-stopped

@@ -77,6 +77,20 @@ def score(name: str, value: float) -> None:
             lf.score_current_trace(name=name, value=value, data_type="NUMERIC")
 
 
+def score_trace(trace_id: str | None, name: str, value: float, comment: str | None = None) -> bool:
+    """Attach a score to a finished trace (e.g. UI thumbs up/down). Returns False if not sent."""
+    lf = langfuse()
+    if lf is None or not trace_id:
+        return False
+    try:
+        lf.create_score(trace_id=trace_id, name=name, value=value, data_type="NUMERIC",
+                        comment=(comment or None) and security.redact_pii(comment)[:500])
+        lf.flush()
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def flush() -> None:
     lf = langfuse()
     if lf is not None:

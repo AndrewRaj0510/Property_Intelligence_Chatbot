@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Property Intelligence Chatbot: waking up</title>
+<style>
+  body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;background:#0f1115;color:#e8e6e1}
+  .card{text-align:center;max-width:420px;padding:2rem}
+  .spin{width:48px;height:48px;margin:0 auto 1.5rem;border:4px solid #333;border-top-color:#b08d57;border-radius:50%;animation:s 1s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  p{color:#a9a49a;line-height:1.5}
+  a{color:#b08d57}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spin" id="spin"></div>
+  <h1 style="font-size:1.3rem">Waking up the chatbot…</h1>
+  <p id="msg">It runs on a free server that sleeps when idle. This usually takes under a minute.</p>
+  <p><a id="direct" href="#">Open it directly</a></p>
+</div>
+<script>
+  // Set APP_URL to the Render service URL (no trailing slash), or pass ?app=https://... in the link.
+  // Only *.onrender.com targets are accepted, so this page can't be abused as an open redirect.
+  const DEFAULT_APP = "https://property-intelligence-chatbot.onrender.com";
+  const asked = new URLSearchParams(location.search).get("app");
+  const ok = (u) => { try { const x = new URL(u); return x.protocol === "https:" && x.hostname.endsWith(".onrender.com"); } catch { return false; } };
+  const APP_URL = asked && ok(asked) ? new URL(asked).origin : DEFAULT_APP;
+  document.getElementById("direct").href = APP_URL;
+  const started = Date.now();
+  async function poll() {
+    try {
+      // no-cors: an opaque response still proves the server answered (Render returns errors while booting).
+      const r = await fetch(APP_URL + "/_stcore/health", { mode: "no-cors", cache: "no-store" });
+      if (r.type === "opaque" || r.ok) { location.replace(APP_URL); return; }
+    } catch (e) { /* still asleep */ }
+    const s = Math.round((Date.now() - started) / 1000);
+    document.getElementById("msg").textContent = `Still starting (${s}s). Free servers can take up to 90 seconds.`;
+    setTimeout(poll, 4000);
+  }
+  poll();
+</script>
+</body>
+</html>

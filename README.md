@@ -63,6 +63,24 @@ python scripts/smoke_test.py --list-free  # list free OpenRouter models that sup
 
 The free model list on OpenRouter changes often; rerun the smoke test before relying on a model.
 
+## Run the chatbot
+
+```bash
+streamlit run app/ui.py                 # local, http://localhost:8501
+docker compose up --build               # same app in the production container (512 MB limit)
+```
+
+The UI has example question chips, a sources expander under each answer, thumbs up/down (sent to Langfuse as a `user_feedback` score on that turn's trace), a retrieval-mode switch (hybrid / semantic / keyword), an optional cost and latency line, and a "data as of" footer. Answers are fully checked by the guardrail before display and then streamed word by word, so the user never sees text that gets replaced afterward.
+
+### Deploy (Render free tier)
+
+1. Render > New > Blueprint > this repo (uses `render.yaml`: Docker, free plan, health check `/_stcore/health`, auto-deploy on push).
+2. Fill the secret env vars in the dashboard (same names as `.env.example`; prefer `QDRANT_READ_API_KEY` over the read-write key).
+3. Keep-alive: a cron-job.org job hitting `https://<service>.onrender.com/_stcore/health` every 10 minutes.
+4. Wake page: publish `wake/` on GitHub Pages or Vercel and share `.../wake/?app=https://<service>.onrender.com`; it polls the app and redirects once the server is awake.
+
+The image contains only `app/`, `.streamlit/` and `data/listings.db`; vectors live in Qdrant Cloud. The imported app uses about 140 MB of RAM.
+
 ## Data
 
 Rebuild the snapshot (about 2 minutes, 1 request/second):
@@ -111,7 +129,7 @@ requirements.txt     # pinned dependencies (pip freeze)
 .env.example         # environment variable template
 ```
 
-Coming next: `ingestion/` (SQLite, Qdrant), `app/`, `eval/`, `Dockerfile`.
+Also: `ingestion/` (SQLite + Qdrant builders), `app/` (agent, tools, guardrails, `ui.py`), `Dockerfile`, `docker-compose.yml`, `render.yaml`, `wake/index.html`.
 
 ## Responsible scraping
 

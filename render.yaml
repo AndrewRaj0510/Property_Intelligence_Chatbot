@@ -1,0 +1,30 @@
+# Render Blueprint: New > Blueprint > pick this repo. Secrets (sync: false) are entered in the dashboard.
+services:
+  - type: web
+    name: property-intelligence-chatbot
+    runtime: docker
+    plan: free
+    region: frankfurt   # closest free region to the Gulf
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /_stcore/health
+    autoDeploy: true
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODELS
+        sync: false
+      - key: OPENROUTER_EMBED_MODEL
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_READ_API_KEY
+        sync: false
+      # Leave QDRANT_API_KEY unset in production: the app only needs the read-only key above.
+      - key: INDEX_SIGNING_KEY
+        sync: false
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false
+      - key: LANGFUSE_SECRET_KEY
+        sync: false
+      - key: LANGFUSE_HOST
+        value: https://cloud.langfuse.com

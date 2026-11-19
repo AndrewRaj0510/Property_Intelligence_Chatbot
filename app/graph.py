@@ -20,6 +20,7 @@ ERROR_REPLY = "Sorry, something went wrong on my side. Please try again in a mom
 RATE_LIMITED_REPLY = "You're sending messages very quickly. Please wait a minute and try again."
 MODES = {"hybrid", "semantic", "keyword"}
 _limiter = security.RateLimiter(config.RATE_LIMIT_TURNS, config.RATE_LIMIT_WINDOW_S)
+_global_limiter = security.RateLimiter(config.RATE_LIMIT_GLOBAL_TURNS, 60)  # all users: protects the shared quota
 
 
 class ChatState(TypedDict, total=False):
@@ -112,7 +113,7 @@ def finalize_node(state: ChatState) -> dict:
     if state.get("error") == "busy":
         return {"answer": draft, "guardrail": {}}
     sources = state.get("sources", [])
-    urls = [s["url"] for s in sources if s.get("url")]
+    urls = [s["url"] for s in sources if security.is_allowed_url(s.get("url", ""))]  # only allowlisted links citable
     report: dict[str, Any] = {"unsupported_numbers": [], "unknown_urls": [], "sources_appended": False,
                               "replaced": False}
     with observation("finalize", as_type="guardrail", input=draft[:2000]) as g:
@@ -128,6 +129,9 @@ def finalize_node(state: ChatState) -> dict:
         if guardrail.leaks_system_prompt(draft, SYSTEM_PROMPT):
             report["prompt_leak"], report["replaced"] = True, True
             draft = guardrail.INJECTION_REPLY
+        draft, n_markup = guardrail.strip_active_markup(draft)
+        if n_markup:
+            report["active_markup_removed"] = n_markup
         draft, report["unknown_urls"] = guardrail.strip_unknown_urls(draft, set(urls))
         if urls and not guardrail.cited_urls(draft) and not report["replaced"]:
             uniq = list(dict.fromkeys(urls))[:5]
@@ -174,8 +178,10 @@ def run_turn(question: str, history: list[dict] | None = None, session_id: str |
     Never raises: every failure becomes a generic message (details only in Langfuse, no stack trace to user)."""
     t0 = time.perf_counter()
     mode = mode if mode in MODES else "hybrid"
-    if session_id and not _limiter.allow(session_id):
+    if (session_id and not _limiter.allow(session_id)) or (user_id and not _limiter.allow("ip:" + user_id)):
         return _reply(RATE_LIMITED_REPLY, t0, error="rate_limited")
+    if not _global_limiter.allow("global"):
+        return _reply(RATE_LIMITED_REPLY, t0, error="rate_limited_global")
     question, refusal = guardrail.check_input(question)
     # PII the user typed (their email / phone) never leaves the process: not to the LLM, not to Langfuse.
     question = security.redact_pii(question)
@@ -186,7 +192,8 @@ def run_turn(question: str, history: list[dict] | None = None, session_id: str |
                 score("input_blocked", 1.0)
         return _reply(refusal, t0, guardrail={"input_blocked": True}, blocked=True)
 
-    emb_before = dict(embeddings.USAGE)
+    emb_turn: dict = {}
+    embeddings.TURN_USAGE.set(emb_turn)
     state: ChatState = {"question": question, "history": _trim_history(history or []),
                         "mode": mode, "messages": [{"role": "user", "content": question}], "tool_rounds": 0}
     with trace_attributes(**attrs, tags=[f"mode:{mode}"]):
@@ -196,7 +203,7 @@ def run_turn(question: str, history: list[dict] | None = None, session_id: str |
             except Exception as e:  # noqa: BLE001
                 root.update(level="ERROR", status_message=type(e).__name__)
                 return _reply(ERROR_REPLY, t0, error="internal")
-            cost = _cost_record(final, emb_before, (time.perf_counter() - t0) * 1000)
+            cost = _cost_record(final, emb_turn, (time.perf_counter() - t0) * 1000)
             tools_used = sorted({c["name"] for c in final.get("tool_calls", [])})
             srcs = list({s["url"]: {"url": s["url"], "title": s.get("title", "")}
                          for s in final.get("sources", []) if security.is_allowed_url(s.get("url", ""))}.values())
@@ -210,12 +217,12 @@ def run_turn(question: str, history: list[dict] | None = None, session_id: str |
             "error": final.get("error")}
 
 
-def _cost_record(final: dict, emb_before: dict, total_ms: float) -> dict:
+def _cost_record(final: dict, emb_turn: dict, total_ms: float) -> dict:
     calls = final.get("llm_calls", [])
     pt = sum(c["prompt_tokens"] for c in calls)
     ct = sum(c["completion_tokens"] for c in calls)
     eq = [c["equivalent_cost_usd"] for c in calls]
-    emb_tokens = embeddings.USAGE["tokens"] - emb_before["tokens"]
+    emb_tokens = emb_turn.get("tokens", 0)
     step: dict[str, float] = {"llm": sum(c["latency_ms"] for c in calls)}
     for tc in final.get("tool_calls", []):
         for k, v in tc["timings_ms"].items():
@@ -224,7 +231,7 @@ def _cost_record(final: dict, emb_before: dict, total_ms: float) -> dict:
     return {
         "llm_calls": len(calls), "prompt_tokens": pt, "completion_tokens": ct,
         "cached_prompt_tokens": sum(c.get("cached_tokens", 0) for c in calls),
-        "embedding_calls": embeddings.USAGE["calls"] - emb_before["calls"], "embedding_tokens": emb_tokens,
+        "embedding_calls": emb_turn.get("calls", 0), "embedding_tokens": emb_tokens,
         "actual_cost_usd": round(sum(c["cost_usd"] for c in calls), 6),
         "equivalent_cost_usd": round(sum(e for e in eq if e), 6) if any(eq) else None,
         "latency_ms": {k: round(v) for k, v in step.items()} | {"total": round(total_ms)},

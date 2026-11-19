@@ -34,4 +34,5 @@ TOOL_OUTPUT_CHARS = 6000      # per tool result sent to the LLM
 MAX_ANSWER_TOKENS = 700
 RATE_LIMIT_TURNS = int(os.getenv("RATE_LIMIT_TURNS", "8"))      # per session ...
 RATE_LIMIT_WINDOW_S = int(os.getenv("RATE_LIMIT_WINDOW_S", "60"))  # ... per this many seconds
+RATE_LIMIT_GLOBAL_TURNS = int(os.getenv("RATE_LIMIT_GLOBAL_TURNS", "30"))  # all sessions, per minute
 LANGFUSE_ENABLED = bool(os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"))

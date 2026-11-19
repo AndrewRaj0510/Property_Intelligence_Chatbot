@@ -19,6 +19,11 @@ from collections import deque
 from urllib.parse import urlsplit
 
 ALLOWED_DOMAINS = {"darglobal.co.uk", "wasalt.sa"}
+try:  # load .env here too: the key must not depend on which module happens to be imported first
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:  # pragma: no cover
+    pass
 _SIGNING_KEY = os.getenv("INDEX_SIGNING_KEY", "").encode()
 
 _INJECTION = re.compile(
