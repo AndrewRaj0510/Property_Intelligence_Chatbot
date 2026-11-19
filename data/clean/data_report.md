@@ -1,19 +1,19 @@
 # Data quality report
 
-Scraped at: 2026-11-18T11:57:31+00:00
+Scraped at: 2026-11-19T03:04:20+00:00
 
 ## Counts
 
 | source | raw rows | clean rows |
 |---|---|---|
-| darglobal (projects) | 43 | 42 |
-| darglobal (company pages) | 22 | 22 |
+| darglobal (projects) | 42 | 41 |
+| darglobal (company pages) | 24 | 24 |
 | darglobal (news, Jan-Sep 2026) | 23 | 23 |
 | wasalt (listings) | 300 | 300 |
 
 ## DarGlobal company pages
 
-22 pages, 116,406 chars, 31 FAQ pairs. Pages: about, partners, get-in-touch, faq, why-invest, hospitality, development-management, luxury-golf-communities, investor, commercial, partners/aston-martin, partners/elie-saab, partners/fendi-casa, partners/lamborghini, partners/marriott-residences-aida-oman, partners/missoni, partners/mouawad, partners/pagani, partners/paramount, partners/the-trump-organization, partners/w-hotels, exclusive-plots
+24 pages, 120,414 chars, 31 FAQ pairs. Pages: about, partners, get-in-touch, faq, why-invest, hospitality, development-management, luxury-golf-communities, investor, commercial, partners/aston-martin, partners/elie-saab, partners/fendi-casa, partners/lamborghini, partners/marriott-residences-aida-oman, partners/missoni, partners/mouawad, partners/pagani, partners/paramount, partners/the-trump-organization, partners/w-hotels, Invest-crypto, exclusive-plots, invest-in-aida
 
 ## DarGlobal news (Q1-Q3 2026)
 
@@ -23,18 +23,18 @@ Scraped at: 2026-11-18T11:57:31+00:00
 
 | field | non-null | null % |
 |---|---|---|
-| country | 42/42 | 0% |
-| city | 41/42 | 2% |
-| brand_partners | 25/42 | 40% |
-| property_types | 40/42 | 5% |
-| starting_price | 0/42 | 100% |
-| status | 18/42 | 57% |
-| summary | 36/42 | 14% |
-| sections | 42/42 | 0% |
+| country | 41/41 | 0% |
+| city | 41/41 | 0% |
+| brand_partners | 26/41 | 37% |
+| property_types | 40/41 | 2% |
+| starting_price | 0/41 | 100% |
+| status | 19/41 | 54% |
+| summary | 37/41 | 10% |
+| sections | 41/41 | 0% |
 
-By country: Oman 15, United Arab Emirates 10, Saudi Arabia 10, Spain 3, United Kingdom 2, Qatar 2
+By country: Oman 13, United Arab Emirates 11, Saudi Arabia 10, Spain 3, United Kingdom 2, Qatar 2
 
-Text per project: min 600, median 2616, max 5212 chars
+Text per project: min 1335, median 2616, max 5212 chars
 
 ## Wasalt listings
 
@@ -60,8 +60,8 @@ Detail pages fetched: 0/300
 
 ## Random rows (eyeball check)
 
-- **D-Villas At Jumeirah Golf Estates** | Dubai, United Arab Emirates | brands [] | types ['apartment', 'villa'] | 2377 chars | https://darglobal.co.uk/d-villas-at-jge
-- **Sunrise Haven** | Muscat, Oman | brands [] | types ['villa'] | 3048 chars | https://darglobal.co.uk/Sunrise-Haven-Luxury-Villas
-- **Marea-Interiors by Missoni** | Casares, Spain | brands ['Missoni'] | types ['apartment'] | 3353 chars | https://darglobal.co.uk/marea
+- **Da Vinci Tower interiors by Pagani** | Dubai, United Arab Emirates | brands ['Pagani'] | types ['apartment'] | 4363 chars | https://darglobal.co.uk/davinci-tower-by-pagani
+- **Trump International Hotel & Tower Dubai** | Dubai, United Arab Emirates | brands ['Trump'] | types ['apartment', 'penthouse'] | 2616 chars | https://darglobal.co.uk/trump-international-hotel-and-tower-dubai
+- **Marriott Residences Aida, Oman** | Muscat, Oman | brands ['Marriott'] | types ['apartment'] | 3777 chars | https://darglobal.co.uk/marriott-residences-aida-oman
 - **Villa, for rent, 8 bedrooms, about 358.87 sqm** | price None | city None | https://wasalt.sa/en/property/rent/villa-35887-sqm-facing-north-with-8-bedrooms-5916492
 - **Villa, for rent, 4 bedrooms, 250 sqm** | price None | city None | https://wasalt.sa/en/property/rent/villa-250-sqm-facing-north-with-4-bedrooms-5919778

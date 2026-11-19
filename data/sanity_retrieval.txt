@@ -1,0 +1,124 @@
+
+=== 'beachfront villas with branded interiors' 
+  [keyword] 1141 ms
+     10.455 darglobal:the-astera-interiors-by-aston-martin#s0                      https://darglobal.co.uk/the-astera
+      9.221 darglobal:neptune-interiors-by-mouawad#s0                              https://darglobal.co.uk/neptune
+      8.352 darglobal:neptune-interiors-by-mouawad#summary                         https://darglobal.co.uk/neptune
+      8.312 darglobal:azure-oceanfront-villas-interiors-by-fendi-casa#summary      https://darglobal.co.uk/one-of-one/fendi-casa-azure-oceanfront-villas
+      7.889 darglobal:the-astera-interiors-by-aston-martin#s3                      https://darglobal.co.uk/the-astera
+   +  0.000 darglobal:the-astera-interiors-by-aston-martin#summary                 https://darglobal.co.uk/the-astera
+  [semantic] 3472 ms
+      0.452 darglobal:azure-oceanfront-villas-interiors-by-fendi-casa#s1           https://darglobal.co.uk/one-of-one/fendi-casa-azure-oceanfront-villas
+      0.437 darglobal:unlisted-with-interiors-by-pagani#s0                         https://darglobal.co.uk/one-of-one/one-of-one-unlisted-by-pagani
+      0.436 darglobal:azure-oceanfront-villas-interiors-by-fendi-casa#summary      https://darglobal.co.uk/one-of-one/fendi-casa-azure-oceanfront-villas
+      0.414 darglobal:trump-tower-jeddah#s1                                        https://darglobal.co.uk/trump-tower-jeddah
+      0.411 darglobal:d-villas-at-jumeirah-golf-estates#s1                         https://darglobal.co.uk/d-villas-at-jge
+  [hybrid] 873 ms
+      0.611 darglobal:azure-oceanfront-villas-interiors-by-fendi-casa#s1           https://darglobal.co.uk/one-of-one/fendi-casa-azure-oceanfront-villas
+      0.600 darglobal:the-astera-interiors-by-aston-martin#s0                      https://darglobal.co.uk/the-astera
+      0.458 darglobal:neptune-interiors-by-mouawad#s0                              https://darglobal.co.uk/neptune
+      0.450 darglobal:azure-oceanfront-villas-interiors-by-fendi-casa#summary      https://darglobal.co.uk/one-of-one/fendi-casa-azure-oceanfront-villas
+      0.410 darglobal:unlisted-with-interiors-by-pagani#s0                         https://darglobal.co.uk/one-of-one/one-of-one-unlisted-by-pagani
+
+=== 'Pagani' 
+  [keyword] 265 ms
+      6.533 darglobal:the-pagani-penthouse#s0                                      https://darglobal.co.uk/one-of-one/project-pagani
+      6.467 darglobal:unlisted-with-interiors-by-pagani#s0                         https://darglobal.co.uk/one-of-one/one-of-one-unlisted-by-pagani
+      6.410 darglobal:the-pagani-penthouse#summary                                 https://darglobal.co.uk/one-of-one/project-pagani
+      6.389 darglobal:unlisted-with-interiors-by-pagani#summary                    https://darglobal.co.uk/one-of-one/one-of-one-unlisted-by-pagani
+      6.368 darglobal:da-vinci-tower-interiors-by-pagani#summary                   https://darglobal.co.uk/davinci-tower-by-pagani
+  [semantic] 1449 ms
+      0.264 darglobal:the-pagani-penthouse#summary                                 https://darglobal.co.uk/one-of-one/project-pagani
+      0.253 darglobal:unlisted-with-interiors-by-pagani#summary                    https://darglobal.co.uk/one-of-one/one-of-one-unlisted-by-pagani
+      0.251 darglobal:company:partners-pagani#s0                                   https://darglobal.co.uk/partners/pagani
+      0.250 darglobal:the-pagani-penthouse#s0                                      https://darglobal.co.uk/one-of-one/project-pagani
+      0.246 darglobal:da-vinci-tower-interiors-by-pagani#summary                   https://darglobal.co.uk/davinci-tower-by-pagani
+  [hybrid] 1744 ms
+      0.750 darglobal:the-pagani-penthouse#summary                                 https://darglobal.co.uk/one-of-one/project-pagani
+      0.700 darglobal:the-pagani-penthouse#s0                                      https://darglobal.co.uk/one-of-one/project-pagani
+      0.533 darglobal:unlisted-with-interiors-by-pagani#summary                    https://darglobal.co.uk/one-of-one/one-of-one-unlisted-by-pagani
+      0.458 darglobal:unlisted-with-interiors-by-pagani#s0                         https://darglobal.co.uk/one-of-one/one-of-one-unlisted-by-pagani
+      0.375 darglobal:company:partners-pagani#s0                                   https://darglobal.co.uk/partners/pagani
+
+=== 'golf course community' {'country': 'Oman'}
+  [keyword] 263 ms
+      8.458 darglobal:fairway-villas#s0                                            https://darglobal.co.uk/fairway-villas-aida-oman
+      7.857 darglobal:sunrise-haven#summary                                        https://darglobal.co.uk/Sunrise-Haven-Luxury-Villas
+      7.766 darglobal:the-great-escape#s1                                          https://darglobal.co.uk/the-great-escape-1-aida-oman
+      7.657 darglobal:trump-golf-villas#s0                                         https://darglobal.co.uk/aida-trump-villas
+      6.949 darglobal:trump-golf-villas#summary                                    https://darglobal.co.uk/aida-trump-villas
+  [semantic] 1098 ms
+      0.336 darglobal:trump-golf-villas#s3                                         https://darglobal.co.uk/aida-trump-villas
+      0.330 darglobal:fairway-villas#s3                                            https://darglobal.co.uk/fairway-villas-aida-oman
+      0.318 darglobal:trump-cliff-villas#s3                                        https://darglobal.co.uk/aida-trump-international-cliff-villas
+      0.313 darglobal:the-great-escape#s1                                          https://darglobal.co.uk/the-great-escape-1-aida-oman
+      0.302 darglobal:the-great-escape#s3                                          https://darglobal.co.uk/the-great-escape-1-aida-oman
+   +  0.000 darglobal:the-great-escape#summary                                     https://darglobal.co.uk/the-great-escape-1-aida-oman
+  [hybrid] 1135 ms
+      0.643 darglobal:trump-golf-villas#s3                                         https://darglobal.co.uk/aida-trump-villas
+      0.553 darglobal:fairway-villas#s0                                            https://darglobal.co.uk/fairway-villas-aida-oman
+      0.450 darglobal:the-great-escape#s1                                          https://darglobal.co.uk/the-great-escape-1-aida-oman
+      0.417 darglobal:fairway-villas#s3                                            https://darglobal.co.uk/fairway-villas-aida-oman
+      0.410 darglobal:sunrise-haven#summary                                        https://darglobal.co.uk/Sunrise-Haven-Luxury-Villas
+   +  0.000 darglobal:fairway-villas#summary                                       https://darglobal.co.uk/fairway-villas-aida-oman
+
+=== 'How do I buy a DarGlobal property?' {'doc_type': 'company'}
+  [keyword] 260 ms
+      9.199 darglobal:company:invest-crypto#s0                                     https://darglobal.co.uk/Invest-crypto
+      8.150 darglobal:company:faq#faq23                                            https://darglobal.co.uk/faq
+      4.144 darglobal:company:partners#s5                                          https://darglobal.co.uk
+      3.333 darglobal:company:why-invest#s16                                       https://darglobal.co.uk/why-invest
+      2.956 darglobal:company:faq#faq13                                            https://darglobal.co.uk/faq
+  [semantic] 888 ms
+      0.710 darglobal:company:faq#faq7                                             https://darglobal.co.uk/faq
+      0.706 darglobal:company:faq#faq23                                            https://darglobal.co.uk/faq
+      0.507 darglobal:company:invest-crypto#s0                                     https://darglobal.co.uk/Invest-crypto
+      0.490 darglobal:company:why-invest#s0                                        https://darglobal.co.uk/why-invest
+  [hybrid] 2607 ms
+      0.667 darglobal:company:faq#faq23                                            https://darglobal.co.uk/faq
+      0.611 darglobal:company:faq#faq7                                             https://darglobal.co.uk/faq
+      0.571 darglobal:company:invest-crypto#s0                                     https://darglobal.co.uk/Invest-crypto
+      0.250 darglobal:company:partners#s5                                          https://darglobal.co.uk
+      0.200 darglobal:company:why-invest#s16                                       https://darglobal.co.uk/why-invest
+
+=== 'revenue growth results' {'doc_type': 'news', 'date_from': '2026-07-01'}
+  [keyword] 265 ms
+      9.096 darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-por https://darglobal.co.uk/press/dar-global-delivers-66-percent-revenue-growth-hy-2026-portfolio-gdv-reaches-23-billion
+      5.130 darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-por https://darglobal.co.uk/press/dar-global-delivers-66-percent-revenue-growth-hy-2026-portfolio-gdv-reaches-23-billion
+      4.961 darglobal:news:how-luxury-real-estate-creates-long-term-wealth#p0      https://darglobal.co.uk/blog/luxury-real-estate-long-term-wealth
+      3.951 darglobal:news:is-buying-a-second-home-still-a-smart-investment#p1     https://darglobal.co.uk/blog/is-buying-a-second-home-still-a-smart-investment
+      3.744 darglobal:news:why-luxury-real-estate-should-be-part-of-every-investme https://darglobal.co.uk/blog/why-luxury-real-estate-investment-portfolios
+  [semantic] 1704 ms
+      0.243 darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-por https://darglobal.co.uk/press/dar-global-delivers-66-percent-revenue-growth-hy-2026-portfolio-gdv-reaches-23-billion
+      0.183 darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-por https://darglobal.co.uk/press/dar-global-delivers-66-percent-revenue-growth-hy-2026-portfolio-gdv-reaches-23-billion
+      0.112 darglobal:news:how-luxury-real-estate-creates-long-term-wealth#p0      https://darglobal.co.uk/blog/luxury-real-estate-long-term-wealth
+      0.085 darglobal:news:why-branded-residences-continue-to-outperform-tradition https://darglobal.co.uk/blog/why-branded-residences-outperform-traditional-luxury-homes
+      0.075 darglobal:news:how-luxury-real-estate-creates-long-term-wealth#p1      https://darglobal.co.uk/blog/luxury-real-estate-long-term-wealth
+  [hybrid] 1934 ms
+      1.000 darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-por https://darglobal.co.uk/press/dar-global-delivers-66-percent-revenue-growth-hy-2026-portfolio-gdv-reaches-23-billion
+      0.667 darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-por https://darglobal.co.uk/press/dar-global-delivers-66-percent-revenue-growth-hy-2026-portfolio-gdv-reaches-23-billion
+      0.500 darglobal:news:how-luxury-real-estate-creates-long-term-wealth#p0      https://darglobal.co.uk/blog/luxury-real-estate-long-term-wealth
+      0.300 darglobal:news:is-buying-a-second-home-still-a-smart-investment#p1     https://darglobal.co.uk/blog/is-buying-a-second-home-still-a-smart-investment
+      0.292 darglobal:news:how-luxury-real-estate-creates-long-term-wealth#p1      https://darglobal.co.uk/blog/luxury-real-estate-long-term-wealth
+
+=== '3 bedroom apartment for rent' {'doc_type': 'listing'}
+  [keyword] 263 ms
+      9.455 wasalt:5844720                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844720
+      9.455 wasalt:5844857                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844857
+      9.455 wasalt:5844813                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844813
+      9.455 wasalt:5819706                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5819706
+      9.339 wasalt:5860938                                                         https://wasalt.sa/en/property/rent/apartment-400-sqm-with-3-bedrooms-5860938
+  [semantic] 1737 ms
+      0.585 wasalt:5844857                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844857
+      0.574 wasalt:5844720                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844720
+      0.571 wasalt:5819706                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5819706
+      0.569 wasalt:5844813                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844813
+      0.547 wasalt:5856708                                                         https://wasalt.sa/en/property/rent/apartment-1000-sqm-with-3-bedrooms-5856708
+  [hybrid] 830 ms
+      0.833 wasalt:5844857                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844857
+      0.833 wasalt:5844720                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844720
+      0.450 wasalt:5844813                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5844813
+      0.450 wasalt:5819706                                                         https://wasalt.sa/en/property/rent/apartment-with-3-bedrooms-5819706
+      0.292 wasalt:5856708                                                         https://wasalt.sa/en/property/rent/apartment-1000-sqm-with-3-bedrooms-5856708
+
+all modes OK

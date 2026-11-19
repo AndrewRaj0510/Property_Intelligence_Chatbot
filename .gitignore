@@ -251,3 +251,6 @@ Thumbs.db
 
 # Raw scrape caches (clean snapshot in data/ is committed)
 data/raw/cache/
+
+# Embedding cache (rebuildable)
+data/.cache/

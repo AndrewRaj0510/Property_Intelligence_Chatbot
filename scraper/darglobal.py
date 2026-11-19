@@ -305,7 +305,7 @@ def next_data(text: str) -> dict | None:
     return json.loads(m.group(1)) if m else None
 
 
-CTA_RE = re.compile(r"^(buy|invest|exclusive|discover|book|win|register)", re.I)
+CTA_RE = re.compile(r"^(buy|invest|exclusive|discover|book|win|register)\b", re.I)
 
 
 def _norm(t: str) -> str:

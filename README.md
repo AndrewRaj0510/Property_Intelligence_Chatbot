@@ -77,16 +77,19 @@ python -m ingestion.normalize    # -> data/clean/{projects,company,news,listings
 | Source | How it is collected | Clean rows | What is available |
 |---|---|---|---|
 | DarGlobal | `sitemap.xml` -> each project page -> embedded Next.js / Strapi JSON (`__NEXT_DATA__`) | 41 projects in 6 countries (Oman 13, UAE 11, Saudi Arabia 10, Spain 3, Qatar 2, UK 2), incl. 7 "One of One" properties | Name, city and country (100%), brand partner, property types (98%), status (46%), and text sections (about, features, amenities, why invest, location), median 2,600 characters per project |
-| DarGlobal company | About, partners + 11 partner pages, contact, FAQ, why-invest, investor relations, hospitality, development management, golf communities, commercial | 21 pages | 31 FAQ question-answer pairs, office addresses, role email addresses, partner overviews, board and company facts |
+| DarGlobal company | About, partners + 11 partner pages, contact, FAQ, why-invest, investor relations, hospitality, development management, golf communities, commercial, + 3 campaign pages (e.g. buying with crypto) | 24 pages | 31 FAQ question-answer pairs, office addresses, role email addresses, partner overviews, board and company facts |
 | DarGlobal news | Press, blog and insights articles, kept only if published 1 Jan - 30 Sep 2026 (date from the CMS) | 23 articles (11 press, 12 blog) | Title, date, body; e.g. HY 2026 results, Trump Plaza Jeddah, Azure Oceanfront Villas launch |
-| Wasalt | English product sitemap on `cdn.wasalt.sa`, random sample of 300 (195 sale, 105 rent) | 300 listings | Purpose, property type (100%), bedrooms (74%), area (43%), URL |
+| Wasalt | English product sitemap on `cdn.wasalt.sa`, random sample of 300 (195 sale, 105 rent) | 300 listings | Purpose, property type (100%), bedrooms (74%), area (76%, each with a certainty flag), URL |
 
 Data quality notes:
 
 - **No DarGlobal starting prices.** The CMS price field is empty for every project and prices are "on request", so `starting_price` is null.
 - **Wasalt listing pages sit behind a Cloudflare challenge** for non-browser clients (HTTP 403, `cf-mitigated: challenge`). The scraper does not try to get around it. Listing fields come from the URL slug only, so price, city, district and description are missing.
-- Wasalt slugs drop the decimal point in areas (158.88 sqm appears as `15888`). Areas above a plausible size for the property type are set to null.
-- One DarGlobal page (`/pre-launch-trump-jeddah-tower`) returned HTTP 500 on every retry and is skipped. One project listed under two URLs is deduplicated.
+- Wasalt slugs drop the decimal point in areas (158.88 sqm appears as `15888`). Each listing keeps the raw number and an `area_status`: `from_url` (plausible as is), `estimated` (decimal inferred for apartments, floors, villas) or `ambiguous` (e.g. land: 162987 could be 1,629.87 or 162,987 sqm, so `area_sqm` is null). `area_text` states the certainty in words so the chatbot cannot present an estimate as fact.
+- Every listing lists its `missing_fields` (price, city, district, description), so the chatbot says the value is not in the data and links the listing page instead of guessing.
+- The Wasalt sample is frozen in `data/raw/wasalt_sample_manifest.txt`; re-runs reuse the same 300 listings (`--resample` draws a new one). Listings that leave the sitemap are flagged `in_current_sitemap: false`.
+- DarGlobal pages are not hard-coded: every sitemap page is classified from its CMS JSON (project, campaign landing page, One of One collection, other). If a page that was scraped before fails later, the last good copy is kept and flagged `stale`.
+- `/pre-launch-trump-jeddah-tower` returns HTTP 500 and `/davinci-tower-by-pagani` returns 404 (removed by the site on 18 Nov although still in its sitemap); Da Vinci Tower is covered only through the Pagani partner page. One project listed under two URLs is deduplicated.
 
 The full report, with null rates and sample rows, is in `data/clean/data_report.md`.
 
