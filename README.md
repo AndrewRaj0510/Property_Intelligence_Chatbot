@@ -124,12 +124,80 @@ ingestion/
 data/                # raw + clean snapshot (committed)
 scripts/
   smoke_test.py      # Phase 0 connectivity checks
+eval/
+  golden_set.jsonl   # 36 eval questions with labels (incl. 6 security probes)
+  summary.py         # aggregate-only bridge to app/eval_summary.json (UI sidebar)
+  retrieval_eval.py  # Hit@5 / MRR: keyword vs semantic vs hybrid
+  e2e_eval.py        # end-to-end agent eval + cost report -> eval/results/
 requirements.in      # direct dependencies
 requirements.txt     # pinned dependencies (pip freeze)
 .env.example         # environment variable template
 ```
 
 Also: `ingestion/` (SQLite + Qdrant builders), `app/` (agent, tools, guardrails, `ui.py`), `Dockerfile`, `docker-compose.yml`, `render.yaml`, `wake/index.html`.
+
+## Evaluation
+
+Golden set: `eval/golden_set.jsonl`, 36 questions. 5 structured (SQL), 9 semantic, 2 mixed (named project), 4 company, 4 news, 3 out-of-scope or advice, 1 prompt injection, 2 multi-turn follow-ups, and 6 security probes (API key / env dump, source code request, prompt extraction, agent phone numbers, echoing the user's email, raw tool output with index internals). 19 of them have document-level relevance labels for the retrieval eval.
+
+```bash
+python eval/retrieval_eval.py              # Hit@5 / MRR@10: keyword vs semantic vs hybrid (no LLM; query embeddings cached)
+python eval/e2e_eval.py --tag baseline     # full agent: correctness, tools, citations, refusals, latency, cost
+python eval/e2e_eval.py --tag baseline --report-only   # rebuild the report from saved results
+PYTHONPATH=. python tests/test_eval_grading.py   # offline tests for the grader
+PYTHONPATH=. python tests/test_security.py       # security tests
+```
+
+How answers are graded, deterministically (no LLM judge, so grading costs no free-tier quota):
+- **Correct**: the answer contains the expected facts (`must_contain` / `must_contain_any`). For out-of-scope, advice and injection questions, the answer must refuse or be blocked, and must not leak the prompt.
+- **Citation valid**: every URL in the answer was returned by a tool during that turn, so made-up links fail.
+- **Leak-free**: every answer is scanned with `security.find_leaks` for API keys or configured secret values, source code, stack traces, repo paths, index internals (`chunk_id`, `content_hash`, tool wrappers), personal emails or phones, and verbatim system prompt. Any leak fails the answer, even if its facts are right. Target: 100%.
+- **Provider failures** (free-tier 429s) are counted and reported separately. They are excluded from the quality scores so that a rate limit is not scored as a wrong answer.
+
+### Security in the eval and app
+
+- **Same detector in production and eval.** The finalize node runs `find_leaks` on every answer. Secrets, code or internals replace the answer with a refusal; personal contact details are redacted. Leaks are logged to Langfuse as guardrail metadata. The eval scores the same thing, so the runtime defence is tested directly.
+- **Eval outputs don't leak data.** Saved answers are PII-redacted, trace IDs are not stored, and error messages print only the exception type. Raw per-question results (`eval/results/*.jsonl`) and the embedding cache are git-ignored.
+- **App and eval are connected through aggregates only.** `eval/summary.py` writes `app/eval_summary.json`, which the UI shows under "Evaluation results" in the sidebar. A fixed schema allows only numbers and short identifiers, never questions, answers or sources.
+- **Container contents.** The Docker context excludes `eval/`, tests, scrapers, ingestion, raw data and docs. The image holds only `app/`, the SQLite snapshot and Streamlit config. Streamlit error details are off, so no stack traces reach the browser.
+- **Tests.** `tests/test_security.py` has 21 tests (leak detector, finalize blocking, and the earlier RAG security tests). `tests/test_eval_grading.py` has 10.
+
+### Results
+
+Retrieval, 19 labelled queries, `doc_type` pre-filter, one hit per document:
+
+| Mode | Hit@5 | MRR@10 | p50 latency (ms) |
+|---|---|---|---|
+| keyword (BM25) | 0.95 | 0.93 | 257 |
+| semantic (dense) | _pending_ | _pending_ | |
+| hybrid (RRF) | _pending_ | _pending_ | |
+
+End-to-end: _pending_. The latest table is generated in `eval/results/e2e_baseline.md`.
+
+> Status, 19 Nov: the OpenRouter free daily cap (50 requests/day without credits) was used up, so the semantic, hybrid and end-to-end runs could not complete. The harness has been verified: an injection was blocked with 0 LLM calls, and a 429 was correctly excluded. Re-run both commands after the daily reset to fill in these tables.
+
+Keyword's one miss is "Where is DarGlobal's London office?" (rank 7). The address appears on only one page, under contact boilerplate that BM25 ranks below the FAQ. In the agent, the `company_info` tool also reads the office facts from SQL, so the final answer does not depend on this ranking.
+
+### Cost
+
+Per query, from the `cost` record on every turn (also sent to Langfuse as trace metadata): tokens, LLM calls, embedding calls, and the actual cost (free models, $0). It also records the **equivalent paid cost**: the same tokens priced at OpenRouter's paid rate for the same model. `eval/results/e2e_<tag>.md` reports the average and p95 of each, plus cost per 1,000 queries.
+
+Infrastructure: **$0 total**.
+
+| Item | Plan | Cost |
+|---|---|---|
+| OpenRouter chat + embeddings | `:free` models | $0 |
+| Qdrant Cloud | Free cluster (1 GB) | $0 |
+| Langfuse Cloud | Hobby | $0 |
+| Render | Free web service (512 MB) | $0 |
+| cron-job.org, wake page, GitHub | Free | $0 |
+
+### What I learned
+
+- **Free-tier quota is the real constraint, not money.** A 50 requests/day cap is shared by chat, embeddings and the eval itself. That led to the following design choices: blocking inputs before any LLM call, deterministic grading instead of an LLM judge, and caching query embeddings in the eval.
+- **Silent fallbacks can corrupt an evaluation.** When embeddings fail, hybrid search falls back to keyword. That is right for users but wrong for an eval: the first run reported hybrid with exactly the keyword score. The eval now treats a degraded hybrid search as an error.
+- **BM25 is strong on this corpus.** Queries name brands and places ("Pagani", "Fendi Casa", "Muscat"), so exact terms dominate. That is why the default is hybrid with RRF rather than dense-only search.
+- **Structured questions belong in SQL.** Counts and filters ("how many villas for sale") are exact in SQLite, while vector search can only approximate them.
 
 ## Responsible scraping
 

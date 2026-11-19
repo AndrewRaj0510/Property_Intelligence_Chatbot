@@ -1,0 +1,445 @@
+{
+ "summary": {
+  "keyword": {
+   "n": 19,
+   "hit@5": 0.947,
+   "mrr@10": 0.929,
+   "latency_ms_p50": 259,
+   "errors": 0
+  },
+  "semantic": {
+   "n": 19,
+   "hit@5": 0.0,
+   "mrr@10": 0.0,
+   "latency_ms_p50": 2290,
+   "errors": 19
+  },
+  "hybrid": {
+   "n": 19,
+   "hit@5": 0.0,
+   "mrr@10": 0.0,
+   "latency_ms_p50": 2786,
+   "errors": 19
+  }
+ },
+ "items": [
+  {
+   "id": "q06",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:da-vinci-tower-interiors-by-pagani",
+    "darglobal:unlisted-with-interiors-by-pagani",
+    "darglobal:the-pagani-penthouse"
+   ]
+  },
+  {
+   "id": "q07",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:azure-oceanfront-villas-interiors-by-fendi-casa",
+    "darglobal:darglobal-mansions-fendi-casa",
+    "darglobal:fairway-villas"
+   ]
+  },
+  {
+   "id": "q08",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:painite-villas-design-inspired-by-automobili-lamborghini",
+    "darglobal:tierra-viva",
+    "darglobal:the-great-escape-2"
+   ]
+  },
+  {
+   "id": "q09",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:the-astera-interiors-by-aston-martin",
+    "darglobal:top-of-the-astera",
+    "darglobal:les-vagues"
+   ]
+  },
+  {
+   "id": "q10",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:fairway-villas",
+    "darglobal:trump-golf-villas",
+    "darglobal:coastal-investment-villas"
+   ]
+  },
+  {
+   "id": "q11",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:les-vagues",
+    "darglobal:azure-oceanfront-villas-interiors-by-fendi-casa",
+    "darglobal:dg1"
+   ]
+  },
+  {
+   "id": "q12",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:marea-interiors-by-missoni",
+    "darglobal:tierra-viva",
+    "darglobal:urban-oasis"
+   ]
+  },
+  {
+   "id": "q13",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:neptune-interiors-by-mouawad",
+    "darglobal:trump-furnished-residences",
+    "darglobal:marriott-residences-aida-oman"
+   ]
+  },
+  {
+   "id": "q14",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:padel-living-residences",
+    "darglobal:neptune-interiors-by-mouawad",
+    "darglobal:trump-park-residences"
+   ]
+  },
+  {
+   "id": "q15",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:trump-tower-jeddah",
+    "darglobal:trump-international-hotel-tower-dubai",
+    "darglobal:trump-park-residences"
+   ]
+  },
+  {
+   "id": "q16",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:dg1",
+    "darglobal:trump-international-hotel-tower-dubai",
+    "darglobal:urban-oasis"
+   ]
+  },
+  {
+   "id": "q17",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:company:get-in-touch",
+    "darglobal:company:about",
+    "darglobal:company:investor"
+   ]
+  },
+  {
+   "id": "q18",
+   "mode": "keyword",
+   "rank": 7,
+   "top3": [
+    "darglobal:company:faq",
+    "darglobal:company:why-invest",
+    "darglobal:company:about"
+   ]
+  },
+  {
+   "id": "q19",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:company:invest-crypto",
+    "darglobal:company:faq",
+    "darglobal:company:partners"
+   ]
+  },
+  {
+   "id": "q20",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:company:faq",
+    "darglobal:company:investor",
+    "darglobal:company:about"
+   ]
+  },
+  {
+   "id": "q21",
+   "mode": "keyword",
+   "rank": 2,
+   "top3": [
+    "darglobal:news:darglobal-delivers-industry-leading-17-3-roe-in-2025-strengthened-position-for-e",
+    "darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-portfolio-gdv-reaches-23bln",
+    "darglobal:news:darglobal-awards-sar-338-million-rayana-master-community-infrastructure-contract"
+   ]
+  },
+  {
+   "id": "q22",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:news:dar-global-appoints-gulf-asia-contracting-for-trump-international-hotel-tower-du",
+    "darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-portfolio-gdv-reaches-23bln",
+    "darglobal:news:darglobal-appoints-al-dahlawi-company-for-contracting-llc-to-deliver-main-works-"
+   ]
+  },
+  {
+   "id": "q23",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:news:emirates-nbd-successfully-executes-usd-250-million-syndicated-term-loan-facility",
+    "darglobal:news:dar-global-delivers-66-revenue-growth-in-hy-2026-as-portfolio-gdv-reaches-23bln",
+    "darglobal:news:is-buying-a-second-home-still-a-smart-investment"
+   ]
+  },
+  {
+   "id": "q24",
+   "mode": "keyword",
+   "rank": 1,
+   "top3": [
+    "darglobal:news:darglobal-debuts-nickelodeon-hotels-resorts-oman-in-aida-the-iconic-brand-of-fam",
+    "darglobal:news:dar-global-and-fendi-casa-announce-azure-oceanfront-villas-in-oman",
+    "darglobal:news:darglobal-delivers-industry-leading-17-3-roe-in-2025-strengthened-position-for-e"
+   ]
+  },
+  {
+   "id": "q06",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q07",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q08",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q09",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q10",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q11",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q12",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q13",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q14",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q15",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q16",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q17",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q18",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q19",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q20",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q21",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q22",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q23",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q24",
+   "mode": "semantic",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q06",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q07",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q08",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q09",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q10",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q11",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q12",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q13",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q14",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q15",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q16",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q17",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q18",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q19",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q20",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q21",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q22",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q23",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  },
+  {
+   "id": "q24",
+   "mode": "hybrid",
+   "rank": null,
+   "top3": []
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "retrieval": {
+  "keyword": {
+   "n": 19,
+   "hit@5": 0.947,
+   "mrr@10": 0.929,
+   "latency_ms_p50": 259,
+   "errors": 0
+  },
+  "semantic": {
+   "n": 19,
+   "hit@5": 0.0,
+   "mrr@10": 0.0,
+   "latency_ms_p50": 2290,
+   "errors": 19
+  },
+  "hybrid": {
+   "n": 19,
+   "hit@5": 0.0,
+   "mrr@10": 0.0,
+   "latency_ms_p50": 2786,
+   "errors": 19
+  }
+ },
+ "updated": "2026-11-19"
+}

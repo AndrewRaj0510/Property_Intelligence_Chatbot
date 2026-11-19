@@ -129,6 +129,13 @@ def finalize_node(state: ChatState) -> dict:
         if guardrail.leaks_system_prompt(draft, SYSTEM_PROMPT):
             report["prompt_leak"], report["replaced"] = True, True
             draft = guardrail.INJECTION_REPLY
+        leaks = security.find_leaks(draft)
+        if {"secret", "code", "internal"} & set(leaks):  # never show keys, source code or index internals
+            report["output_leak"], report["replaced"] = leaks, True
+            draft = guardrail.INJECTION_REPLY
+        elif "pii" in leaks:  # personal contact details: redact, keep the rest of the answer
+            report["pii_redacted"] = True
+            draft = security.redact_pii(draft)
         draft, n_markup = guardrail.strip_active_markup(draft)
         if n_markup:
             report["active_markup_removed"] = n_markup

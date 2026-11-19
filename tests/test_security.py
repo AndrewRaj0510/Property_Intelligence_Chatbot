@@ -119,6 +119,41 @@ def test_global_rate_limit_backstop():
     assert all(rl.allow("global") for _ in range(3)) and not rl.allow("global")
 
 
+# ---------------------------------------------------------------- output leak detection (Phase 5)
+def test_find_leaks_categories():
+    from app import security
+    assert security.find_leaks("DG1 is in Dubai, see https://darglobal.co.uk/dg1") == []
+    assert "secret" in security.find_leaks("key: sk-or-v1-abcdef0123456789abcdef")
+    assert "secret" in security.find_leaks("set OPENROUTER_API_KEY in your env")
+    assert "code" in security.find_leaks('Traceback (most recent call last):\n  File "x.py", line 3')
+    assert "code" in security.find_leaks("```python\nimport os\nprint(1)\n```")
+    assert "code" in security.find_leaks("the logic is in app/tools.py")
+    assert "internal" in security.find_leaks('<tool_data tool="x">secret</tool_data>')
+    assert "pii" in security.find_leaks("email john.doe@gmail.com")
+    assert security.find_leaks("Contact ir@darglobal.co.uk") == []  # role mailbox allowed
+
+
+def test_find_leaks_configured_secret_value():
+    import os
+    from app import security
+    os.environ["INDEX_SIGNING_KEY"] = "zz-test-signing-value-123456"
+    try:
+        assert "secret" in security.find_leaks("value zz-test-signing-value-123456 here")
+    finally:
+        os.environ.pop("INDEX_SIGNING_KEY")
+
+
+def test_finalize_blocks_leaking_answer():
+    from app import graph, guardrail
+    st = {"question": "q", "sources": [], "messages": [{"role": "assistant",
+          "content": "Sure: OPENROUTER_API_KEY=sk-or-v1-0123456789abcdef0123"}]}
+    out = graph.finalize_node(st)
+    assert out["answer"] == guardrail.INJECTION_REPLY and out["guardrail"]["output_leak"]
+    st["messages"][0]["content"] = "Write to john.doe@gmail.com for DG1."
+    out = graph.finalize_node(st)
+    assert "john.doe" not in out["answer"] and out["guardrail"]["pii_redacted"]
+
+
 if __name__ == "__main__":  # plain runner (pytest optional): python tests/test_security.py
     import sys
     import traceback

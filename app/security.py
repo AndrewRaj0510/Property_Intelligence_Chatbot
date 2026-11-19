@@ -91,6 +91,40 @@ def redact_pii(text: str) -> str:
     return _PHONE.sub(phone, text)
 
 
+# ------------------------------------------------------------------ output leak detection
+# Used at runtime (finalize node blocks the answer) and by the eval (leak-free rate must be 100%).
+_SECRET_ENV = ("OPENROUTER_API_KEY", "QDRANT_API_KEY", "QDRANT_READ_API_KEY", "LANGFUSE_SECRET_KEY",
+               "LANGFUSE_PUBLIC_KEY", "INDEX_SIGNING_KEY")
+_LEAK_PATTERNS = {
+    "secret": re.compile(
+        r"\bsk-or-[\w-]{10,}|\bsk-[A-Za-z0-9]{20,}|\b[ps]k-lf-[\w-]{8,}|\beyJ[\w-]{10,}\.[\w-]{10,}\.|"
+        r"\b(?:" + "|".join(_SECRET_ENV) + r")\b|\bBearer\s+[\w.-]{16,}", re.I),
+    "code": re.compile(
+        r"Traceback \(most recent call last\)|File \"[^\"]+\.py\", line \d+|"
+        r"\b(?:app|ingestion|scraper|scripts|eval)/\w+\.py\b|"
+        r"```[a-z]*\s*\n\s*(?:import \w|from [\w.]+ import|def \w+\(|class \w+[(:])", re.I),
+    "internal": re.compile(r"<\s*/?\s*tool_data\b|\bcontent_hash\b|\bchunk_id\b|\bparent_id\b", re.I),
+}
+
+
+def _secret_values() -> list[str]:
+    vals = [os.getenv(n, "") for n in _SECRET_ENV]
+    vals.append(urlsplit(os.getenv("QDRANT_URL", "")).hostname or "")  # private cluster host
+    return [v for v in vals if len(v) >= 12]
+
+
+def find_leaks(text: str) -> list[str]:
+    """Categories of leaked material in `text`: secret (key patterns, env names, or any configured secret value
+    verbatim), code (source, stack traces, repo paths), internal (tool wrappers, index field names),
+    pii (personal email / phone that redact_pii would remove)."""
+    found = [cat for cat, rx in _LEAK_PATTERNS.items() if rx.search(text)]
+    if "secret" not in found and any(v in text for v in _secret_values()):
+        found.insert(0, "secret")
+    if redact_pii(text) != text:
+        found.append("pii")
+    return found
+
+
 def mask_for_logs(*, data, **_):
     """Langfuse `mask` hook: redact PII from everything exported to Langfuse."""
     if isinstance(data, str):

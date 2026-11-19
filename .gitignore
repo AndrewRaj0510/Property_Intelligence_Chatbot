@@ -254,3 +254,7 @@ data/raw/cache/
 
 # Embedding cache (rebuildable)
 data/.cache/
+
+# Eval raw outputs (full answers, per-item data) stay local; only aggregate .md / eval_summary.json are shared
+eval/results/*.jsonl
+eval/results/query_embeddings.json

@@ -6,6 +6,7 @@ reaches the user), then streamed to the screen word by word. Token-level streami
 text that the guardrail may still replace, so it is deliberately not used.
 """
 import hashlib
+import json
 import logging
 import os
 import re
@@ -31,6 +32,35 @@ EXAMPLES = [
     "What's the weather in Riyadh?",
 ]
 
+def _pct(v) -> str:
+    return "n/a" if v is None else f"{float(v):.0%}"
+
+
+def _render_eval_panel() -> None:
+    """Latest offline eval (Phase 5): aggregate numbers only, from app/eval_summary.json."""
+    try:
+        s = json.loads((Path(__file__).with_name("eval_summary.json")).read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 - no eval run yet, or unreadable: hide the panel
+        return
+    with st.expander("Evaluation results"):
+        rows = []
+        for m, d in (s.get("retrieval") or {}).items():
+            if d.get("errors", 0) < d.get("n", 1):  # skip modes that could not run (quota)
+                rows.append(f"| {m} | {float(d['hit@5']):.2f} | {float(d['mrr@10']):.2f} |")
+        if rows:
+            st.markdown("**Retrieval**\n\n| Mode | Hit@5 | MRR |\n|---|---|---|\n" + "\n".join(rows))
+        e = s.get("e2e")
+        if e and e.get("completed"):
+            st.markdown(
+                f"**End-to-end** ({int(e['completed'])} questions)\n\n"
+                f"- Correct: {_pct(e.get('correct'))}\n- Valid citations: {_pct(e.get('citation_valid'))}\n"
+                f"- Correct refusals: {_pct(e.get('refusal_ok'))}\n- Leak-free: {_pct(e.get('leak_free'))}\n"
+                f"- Latency p50 / p95: {e.get('latency_s_p50')} / {e.get('latency_s_p95')} s\n"
+                f"- Equivalent paid cost: ${float(e.get('equiv_cost_per_1k_usd') or 0):.2f} per 1,000 queries "
+                f"(actual: ${float(e.get('actual_cost_per_1k_usd') or 0):.2f}, free models)")
+        st.caption(f"Offline eval, updated {str(s.get('updated', ''))[:10]}")
+
+
 st.set_page_config(page_title="Property Intelligence Chatbot", page_icon="🏙️", layout="centered")
 
 ss = st.session_state
@@ -48,6 +78,7 @@ with st.sidebar:
         st.rerun()
     st.caption("Answers come only from scraped DarGlobal project/company pages and a Wasalt (KSA) listings "
                "sample. Not investment advice.")
+    _render_eval_panel()
 
 st.title("🏙️ Property Intelligence Chatbot")
 st.caption("Ask about DarGlobal projects, the company, its news, or Wasalt listings in Saudi Arabia.")

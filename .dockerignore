@@ -16,3 +16,13 @@ scripts/
 tests/
 wake/
 *.md
+eval/
+docs/
+.streamlit/secrets.toml
+*.jsonl
+*.log
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+render.yaml
