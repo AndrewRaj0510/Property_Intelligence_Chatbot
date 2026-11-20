@@ -14,7 +14,7 @@ SCHEMA = """
 CREATE TABLE listings (
   id TEXT PRIMARY KEY, source TEXT NOT NULL, title TEXT, purpose TEXT, property_type TEXT,
   price REAL, currency TEXT, rent_period TEXT, bedrooms INTEGER, bathrooms INTEGER,
-  area_sqm REAL, area_status TEXT, area_text TEXT, city TEXT, district TEXT, country TEXT,
+  area_sqm REAL, area_status TEXT, area_text TEXT, floors INTEGER, facing TEXT, street_width_m INTEGER, city TEXT, district TEXT, country TEXT,
   description TEXT, missing_fields TEXT, listed_lastmod TEXT, url TEXT NOT NULL, scraped_at TEXT NOT NULL
 );
 CREATE INDEX ix_listings_filter ON listings(city, property_type, purpose, price, bedrooms);
@@ -83,10 +83,10 @@ def main() -> None:
     con = sqlite3.connect(SQLITE_PATH)
     con.executescript(SCHEMA)
     con.executemany(
-        "INSERT INTO listings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO listings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         [(r["id"], r["source"], r["title"], r["purpose"], r["property_type"], r["price"], r["currency"],
           r["rent_period"], r["bedrooms"], r["bathrooms"], r["area_sqm"], r["area_status"], r["area_text"],
-          r["city"], r["district"], r["country"], r["description"], json.dumps(r["missing_fields"]),
+          r.get("floors"), r.get("facing"), r.get("street_width_m"), r["city"], r["district"], r["country"], r["description"], json.dumps(r["missing_fields"]),
           r["listed_lastmod"], r["url"], r["scraped_at"]) for r in listings],
     )
     con.executemany(

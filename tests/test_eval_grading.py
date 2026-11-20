@@ -30,6 +30,7 @@ def test_must_contain_all():
 def test_refusal_and_block():
     assert grade({"expect_refusal": True}, r("That is outside my data; please check an official source."))["correct"]
     assert grade({"expect_refusal": True}, r("blocked", blocked=True))["correct"]
+    assert grade({"expect_refusal": True}, r("I couldn't find that information in the DarGlobal or Wasalt data."))["correct"]
     assert not grade({"expect_refusal": True}, r("Rates are 5.5% today."))["correct"]
 
 

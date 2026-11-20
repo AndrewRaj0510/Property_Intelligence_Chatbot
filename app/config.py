@@ -43,7 +43,16 @@ MAX_TOOL_ROUNDS = 3
 HISTORY_TURNS = 6
 HISTORY_MSG_CHARS = 1200      # older assistant answers are truncated in history
 TOOL_OUTPUT_CHARS = 6000      # per tool result sent to the LLM
-MAX_ANSWER_TOKENS = 1200     # 700 cut 10-row listing tables mid-link
+TOOL_OUTPUT_CHARS_LIST = 14000  # list_projects returns COMPLETE lists (41 projects ~ 8k chars compact): never truncate
+MAX_ANSWER_TOKENS = 2500     # 700 cut 10-row tables; 1200 cut the 41-project list. Only generated tokens cost time
+# Reasoning ("thinking") per step. Measured 20 Nov:
+# - tool-decision step: reasoning OFF + chat history -> model skipped tools and invented facts
+#   (answered ir@darglobal.com instead of ir@darglobal.co.uk). ON -> correct tool 6/6. Costs ~1-3 s.
+# - answer step (after tool results): reasoning ON burned 270-460 of 700 output tokens on hidden thinking
+#   (answers cut off) and took 4-11 s; OFF -> 2.4 s, complete answers.
+# "auto" = on for the first call of a turn (choose tools), off once tool results are in (write the answer).
+LLM_REASONING = os.getenv("LLM_REASONING", "auto").lower()  # auto | on | off
+LLM_TIMEOUT_S = int(os.getenv("LLM_TIMEOUT_S", "20"))  # per model attempt, then fall back to the next model
 RATE_LIMIT_TURNS = int(os.getenv("RATE_LIMIT_TURNS", "8"))      # per session ...
 RATE_LIMIT_WINDOW_S = int(os.getenv("RATE_LIMIT_WINDOW_S", "60"))  # ... per this many seconds
 RATE_LIMIT_GLOBAL_TURNS = int(os.getenv("RATE_LIMIT_GLOBAL_TURNS", "30"))  # all sessions, per minute

@@ -4,21 +4,21 @@
    "n": 19,
    "hit@5": 0.947,
    "mrr@10": 0.929,
-   "latency_ms_p50": 260,
+   "latency_ms_p50": 258,
    "errors": 0
   },
   "semantic": {
    "n": 19,
-   "hit@5": 0.211,
-   "mrr@10": 0.175,
-   "latency_ms_p50": 2873,
-   "errors": 15
+   "hit@5": 0.263,
+   "mrr@10": 0.228,
+   "latency_ms_p50": 750,
+   "errors": 14
   },
   "hybrid": {
    "n": 19,
    "hit@5": 0.263,
-   "mrr@10": 0.224,
-   "latency_ms_p50": 3220,
+   "mrr@10": 0.228,
+   "latency_ms_p50": 852,
    "errors": 14
   }
  },
@@ -222,8 +222,12 @@
   {
    "id": "q07",
    "mode": "semantic",
-   "rank": null,
-   "top3": []
+   "rank": 1,
+   "top3": [
+    "darglobal:azure-oceanfront-villas-interiors-by-fendi-casa",
+    "darglobal:darglobal-mansions-fendi-casa",
+    "darglobal:fairway-villas"
+   ]
   },
   {
    "id": "q08",
@@ -400,7 +404,7 @@
    "top3": [
     "darglobal:neptune-interiors-by-mouawad",
     "darglobal:padel-living-residences",
-    "darglobal:darglobal-mansions-fendi-casa"
+    "darglobal:trump-furnished-residences"
    ]
   },
   {
@@ -434,11 +438,11 @@
   {
    "id": "q18",
    "mode": "hybrid",
-   "rank": 4,
+   "rank": 3,
    "top3": [
     "darglobal:company:faq",
     "darglobal:company:about",
-    "darglobal:company:why-invest"
+    "darglobal:company:get-in-touch"
    ]
   },
   {

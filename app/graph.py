@@ -4,9 +4,12 @@ Conversation memory: the caller passes previous turns (`history`, OpenAI-format 
 the last `HISTORY_TURNS` turns are sent to the model. Each turn is one Langfuse trace with child
 observations per LLM call and tool call, plus token, cost and latency totals (per-query cost capture).
 """
+import contextvars
 import json
 import operator
+import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Annotated, Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -63,16 +66,39 @@ def _trim_history(history: list[dict]) -> list[dict]:
 
 
 # ------------------------------------------------------------------ nodes
+_FACTUAL = re.compile(r"@|https?://|\d")
+
+
+def _looks_factual(text: str) -> bool:
+    return bool(_FACTUAL.search(text or ""))
+
+
 def agent_node(state: ChatState) -> dict:
     rounds = state.get("tool_rounds", 0)
     msgs = [{"role": "system", "content": SYSTEM_PROMPT}, *_trim_history(state.get("history", [])),
             *state.get("messages", [])]
     final_round = rounds >= config.MAX_TOOL_ROUNDS
+    mode = config.LLM_REASONING
+    reasoning = mode == "on" or (mode == "auto" and rounds == 0)
     with observation("llm", as_type="generation", input=msgs[-3:],
-                     metadata={"tool_round": rounds, "forced_answer": final_round}) as gen:
+                     metadata={"tool_round": rounds, "forced_answer": final_round, "reasoning": reasoning}) as gen:
+        made: list[llm.LLMResult] = []
         try:
-            res = llm.chat(msgs, tools=tools.openai_schemas(), tool_choice="none" if final_round else "auto")
+            res = llm.chat(msgs, tools=tools.openai_schemas(), tool_choice="none" if final_round else "auto",
+                           reasoning=reasoning)
+            made.append(res)
+            # Safety net: a first-call answer with no tool call that states facts (email, link, number) is not
+            # grounded in this turn's data -> retry once, forcing a tool call.
+            if rounds == 0 and not res.message.get("tool_calls") and _looks_factual(res.message.get("content", "")):
+                gen.update(metadata={"ungrounded_retry": True})
+                res = llm.chat(msgs, tools=tools.openai_schemas(), tool_choice="required", reasoning=reasoning)
+                made.append(res)
         except llm.LLMBusyError as e:
+            if made:  # the retry failed: keep the first answer (finalize still checks it)
+                res = made[-1]
+            else:
+                gen.update(level="ERROR", status_message="all models busy")
+                return {"messages": [{"role": "assistant", "content": str(e)}], "error": "busy"}
             gen.update(level="ERROR", status_message="all models busy")
             return {"messages": [{"role": "assistant", "content": str(e)}], "error": "busy"}
         gen.update(model=res.model, output=res.message,
@@ -82,28 +108,45 @@ def agent_node(state: ChatState) -> dict:
     msg = res.message
     if final_round:
         msg.pop("tool_calls", None)
-    call = {"model": res.model, "prompt_tokens": res.prompt_tokens, "completion_tokens": res.completion_tokens,
-            "cost_usd": res.cost_usd, "equivalent_cost_usd": res.equivalent_cost_usd, "latency_ms": res.latency_ms,
-            "cached_tokens": int((res.raw_usage.get("prompt_tokens_details") or {}).get("cached_tokens") or 0)}
-    return {"messages": [msg], "llm_calls": [call]}
+    calls = [{"model": r.model, "prompt_tokens": r.prompt_tokens, "completion_tokens": r.completion_tokens,
+              "cost_usd": r.cost_usd, "equivalent_cost_usd": r.equivalent_cost_usd, "latency_ms": r.latency_ms,
+              "reasoning": reasoning, "reasoning_tokens": r.reasoning_tokens, "finish_reason": r.finish_reason,
+              "cached_tokens": int((r.raw_usage.get("prompt_tokens_details") or {}).get("cached_tokens") or 0)}
+             for r in made]  # every call is billed/timed, including a retried one
+    return {"messages": [msg], "llm_calls": calls}
 
 
 def tools_node(state: ChatState) -> dict:
     last = state["messages"][-1]
     mode = state.get("mode", "hybrid")
     out_msgs, sources, calls = [], [], []
-    for tc in last.get("tool_calls", []):
+    all_tcs = last.get("tool_calls", [])
+    tcs = all_tcs[:4]  # cap parallel calls per round
+
+    def run_one(tc: dict):
         name, args = tc["function"]["name"], tc["function"]["arguments"]
         t0 = time.perf_counter()
         with observation(name, as_type="tool", input=args) as span:
             res = tools.run_tool(name, args, mode=mode)
             span.update(output=res.text[:4000], metadata={"timings_ms": res.timings_ms, **res.meta})
-        calls.append({"name": name, "args": args, "latency_ms": (time.perf_counter() - t0) * 1000,
-                      "timings_ms": res.timings_ms, "meta": res.meta})
+        return name, args, res, (time.perf_counter() - t0) * 1000
+
+    # Tool calls of one round are independent (SQLite, Qdrant, embeddings): run them in parallel.
+    # Each thread gets a copy of the context so Langfuse spans + per-turn embedding usage stay attached.
+    if len(tcs) > 1:
+        with ThreadPoolExecutor(max_workers=len(tcs)) as ex:
+            results = list(ex.map(lambda tc: contextvars.copy_context().run(run_one, tc), tcs))
+    else:
+        results = [run_one(tc) for tc in tcs]
+    for tc, (name, args, res, ms) in zip(tcs, results):
+        cap = config.TOOL_OUTPUT_CHARS_LIST if name == "list_projects" else config.TOOL_OUTPUT_CHARS
+        content, n_inj = guardrail.sanitize_tool_text(name, res.text, cap)
+        calls.append({"name": name, "args": args, "latency_ms": ms, "timings_ms": res.timings_ms, "meta": res.meta,
+                      "injection_neutralised": n_inj})
         sources += res.sources
-        content, n_inj = guardrail.sanitize_tool_text(name, res.text, config.TOOL_OUTPUT_CHARS)
-        calls[-1]["injection_neutralised"] = n_inj
         out_msgs.append({"role": "tool", "tool_call_id": tc["id"], "content": content})
+    for tc in all_tcs[4:]:  # every tool_call id needs a reply, also beyond the cap
+        out_msgs.append({"role": "tool", "tool_call_id": tc["id"], "content": "Skipped: too many tool calls in one round."})
     return {"messages": out_msgs, "sources": sources, "tool_calls": calls,
             "tool_rounds": state.get("tool_rounds", 0) + 1}
 
@@ -119,11 +162,13 @@ def finalize_node(state: ChatState) -> dict:
     with observation("finalize", as_type="guardrail", input=draft[:2000]) as g:
         if not draft:
             draft, report["replaced"] = NOT_FOUND, True
-        bad = guardrail.unsupported_numbers(draft, [s["text"] for s in sources], state["question"])
+        # Evidence = tool data + the data snapshot date the system prompt gives the model (e.g. "18-19 Nov 2026").
+        evidence = [s["text"] for s in sources] + [config.SNAPSHOT_DATE]
+        bad = guardrail.unsupported_numbers(draft, evidence, state["question"])
         if bad:
             report["unsupported_numbers"] = bad
             # Drop only the sentences/bullets with an unsupported number; keep the rest if it still says something.
-            trimmed = guardrail.drop_unsupported(draft, [s["text"] for s in sources], state["question"])
+            trimmed = guardrail.drop_unsupported(draft, evidence, state["question"])
             if trimmed is not None:
                 draft, report["trimmed"] = trimmed, True
             else:

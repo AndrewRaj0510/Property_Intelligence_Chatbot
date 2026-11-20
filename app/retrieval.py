@@ -99,11 +99,17 @@ class SearchResult:
 def build_filter(doc_type=None, source=None, country=None, city=None, brand=None, project=None,
                  property_type=None, date_from=None, date_to=None) -> models.Filter | None:
     must: list[models.Condition] = []
-    for fname, val in [("doc_type", doc_type), ("source", source), ("country_key", key(country)),
-                       ("city_key", key(city)), ("brand_key", key(brand)), ("project_key", key(project)),
-                       ("ptype_key", key(property_type))]:
-        if val:
-            must.append(models.FieldCondition(key=fname, match=models.MatchValue(value=val)))
+    for fname, val in [("doc_type", doc_type), ("source", source), ("country_key", country),
+                       ("city_key", city), ("brand_key", brand), ("project_key", project),
+                       ("ptype_key", property_type)]:
+        if not val:
+            continue
+        if isinstance(val, (list, tuple)):  # several allowed values (e.g. region -> countries)
+            vals = [key(v) if fname not in ("doc_type", "source") else v for v in val]
+            must.append(models.FieldCondition(key=fname, match=models.MatchAny(any=vals)))
+        else:
+            v = key(val) if fname not in ("doc_type", "source") else val
+            must.append(models.FieldCondition(key=fname, match=models.MatchValue(value=v)))
     if date_from or date_to:
         must.append(models.FieldCondition(key="date", range=models.DatetimeRange(gte=date_from, lte=date_to)))
     return models.Filter(must=must) if must else None

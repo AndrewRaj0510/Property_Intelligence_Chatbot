@@ -30,7 +30,9 @@ REFUSAL_RE = re.compile(
     r"can(no|')t (help|provide|give|answer)|don't have (that|this|data|information)|"
     r"no (investment|financial|legal) advice|not (financial|investment) advice|official source|"
     r"only (answer|help) (with|questions about)|not covered|not in (my|our|the) data|"
-    r"(don't|do not) have (access to|any) .{0,40}(data|information)|outside (what|the data) i", re.I)
+    r"(don't|do not) have (access to|any) .{0,40}(data|information)|outside (what|the data) i|"
+    # the app's own not-found wording ("I couldn't find that in the DarGlobal / Wasalt data")
+    r"(couldn't|could not|can't|cannot) find .{0,60}in the .{0,40}data", re.I)
 PROVIDER_FAIL = ("rate limit", "busy right now", "sending messages very quickly", "something went wrong")
 
 

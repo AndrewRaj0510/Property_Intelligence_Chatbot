@@ -3,6 +3,7 @@
 Every call returns an `LLMResult` with token usage, actual cost (OpenRouter `usage.cost`, $0 on `:free`)
 and the *equivalent* cost at the paid price of the same model (from OpenRouter `/models` pricing).
 """
+import threading
 import time
 from dataclasses import dataclass, field
 
@@ -11,7 +12,7 @@ from openai import APIStatusError, APITimeoutError, OpenAI, RateLimitError
 
 from app import config
 
-TIMEOUT_S = 30
+TIMEOUT_S = config.LLM_TIMEOUT_S
 BUSY_MESSAGE = "The free AI model is busy right now (rate limit). Please try again in a minute."
 
 _client: OpenAI | None = None
@@ -64,18 +65,24 @@ class LLMResult:
     equivalent_cost_usd: float | None = None
     latency_ms: float = 0.0
     raw_usage: dict = field(default_factory=dict)
+    reasoning_tokens: int = 0
+    finish_reason: str | None = None
 
 
 def chat(messages: list[dict], tools: list[dict] | None = None, temperature: float = 0.1,
-         tool_choice: str = "auto", max_tokens: int = config.MAX_ANSWER_TOKENS) -> LLMResult:
+         tool_choice: str = "auto", max_tokens: int = config.MAX_ANSWER_TOKENS,
+         reasoning: bool = False) -> LLMResult:
     """One chat completion. OpenRouter tries `models` in order server-side; we also retry once client-side
     on transient errors with the remaining models."""
     models = config.OPENROUTER_MODELS or ["nvidia/nemotron-3.5-super-vl:free"]
     last_err: Exception | None = None
     for start in range(len(models)):
         order = models[start:]
+        extra: dict = {"usage": {"include": True}, "reasoning": {"enabled": reasoning}}
+        if len(order) > 1:
+            extra["models"] = order
         kwargs: dict = {"model": order[0], "messages": messages, "temperature": temperature, "max_tokens": max_tokens,
-                        "extra_body": {"usage": {"include": True}, **({"models": order} if len(order) > 1 else {})}}
+                        "extra_body": extra}
         if tools:
             kwargs["tools"] = tools
             kwargs["tool_choice"] = tool_choice
@@ -106,5 +113,10 @@ def chat(messages: list[dict], tools: list[dict] | None = None, temperature: flo
         return LLMResult(message=out, model=model_used, prompt_tokens=pt, completion_tokens=ct,
                          cost_usd=float(u.get("cost") or 0.0),
                          equivalent_cost_usd=equivalent_cost(model_used, pt, ct),
-                         latency_ms=latency, raw_usage=u)
+                         latency_ms=latency, raw_usage=u, finish_reason=r.choices[0].finish_reason,
+                         reasoning_tokens=int((u.get("completion_tokens_details") or {}).get("reasoning_tokens") or 0))
     raise LLMBusyError(BUSY_MESSAGE) from last_err
+
+
+# Warm the price table in the background so the first user turn never waits for it.
+threading.Thread(target=pricing, daemon=True).start()

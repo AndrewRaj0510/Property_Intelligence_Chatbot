@@ -4,27 +4,27 @@
    "n": 19,
    "hit@5": 0.947,
    "mrr@10": 0.929,
-   "latency_ms_p50": 260,
+   "latency_ms_p50": 258,
    "errors": 0
   },
   "semantic": {
    "n": 19,
-   "hit@5": 0.211,
-   "mrr@10": 0.175,
-   "latency_ms_p50": 2873,
-   "errors": 15
+   "hit@5": 0.263,
+   "mrr@10": 0.228,
+   "latency_ms_p50": 750,
+   "errors": 14
   },
   "hybrid": {
    "n": 19,
    "hit@5": 0.263,
-   "mrr@10": 0.224,
-   "latency_ms_p50": 3220,
+   "mrr@10": 0.228,
+   "latency_ms_p50": 852,
    "errors": 14
   }
  },
  "updated": "2026-11-20",
  "e2e": {
-  "tag": "after_fix",
+  "tag": "latency_fix",
   "questions": 36,
   "completed": 36,
   "provider_failures": 0,
@@ -33,12 +33,12 @@
   "citation_valid": 0.964,
   "refusal_ok": 1.0,
   "leak_free": 1.0,
-  "latency_s_p50": 7.1,
-  "latency_s_p95": 20.2,
-  "tokens_avg": 7430,
-  "tokens_p95": 15420,
-  "llm_calls_avg": 2.03,
+  "latency_s_p50": 5.2,
+  "latency_s_p95": 11.3,
+  "tokens_avg": 7590,
+  "tokens_p95": 11171,
+  "llm_calls_avg": 1.72,
   "actual_cost_per_1k_usd": 0.0,
-  "equiv_cost_per_1k_usd": 1.2867
+  "equiv_cost_per_1k_usd": 1.2449
  }
 }

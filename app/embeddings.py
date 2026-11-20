@@ -1,5 +1,6 @@
 """Dense embeddings via OpenRouter (OpenAI-compatible), with retries and token accounting."""
 import contextvars
+import functools
 import threading
 import time
 
@@ -53,7 +54,13 @@ def embed(texts: list[str], retries: int = 8, timeout: float | None = None) -> l
     raise RuntimeError("unreachable")
 
 
+@functools.lru_cache(maxsize=512)
+def _embed_query_cached(text: str) -> tuple[float, ...]:
+    return tuple(embed([text], retries=1, timeout=config.EMBED_QUERY_TIMEOUT_S)[0])
+
+
 def embed_query(text: str) -> list[float]:
-    # Few retries at query time: a user is waiting; retrieval falls back to keyword search on failure.
-    # Short timeout: if the embedding provider hangs, fall back to keyword search fast instead of after ~2 min.
-    return embed([text], retries=1, timeout=config.EMBED_QUERY_TIMEOUT_S)[0]
+    """Few retries at query time: a user is waiting; retrieval falls back to keyword search on failure.
+    Short timeout: if the embedding provider hangs, fall back to keyword search fast.
+    LRU-cached (failures are not cached): repeated / example questions skip the embedding round trip."""
+    return list(_embed_query_cached(" ".join(text.split()).lower()))
