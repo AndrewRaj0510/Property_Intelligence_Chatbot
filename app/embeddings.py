@@ -33,12 +33,13 @@ def client() -> OpenAI:
     return _client
 
 
-def embed(texts: list[str], retries: int = 8) -> list[list[float]]:
+def embed(texts: list[str], retries: int = 8, timeout: float | None = None) -> list[list[float]]:
     """Embed a batch of texts. Retries with exponential backoff on rate limits / transient errors."""
     delay = 2.0
     for attempt in range(retries):
         try:
-            r = client().embeddings.create(model=config.EMBED_MODEL, input=texts)
+            c = client() if timeout is None else client().with_options(timeout=timeout)
+            r = c.embeddings.create(model=config.EMBED_MODEL, input=texts)
             _record(getattr(r.usage, "total_tokens", 0) or getattr(r.usage, "prompt_tokens", 0) or 0)
             vecs = [d.embedding for d in sorted(r.data, key=lambda d: d.index)]
             if len(vecs) != len(texts):
@@ -54,4 +55,5 @@ def embed(texts: list[str], retries: int = 8) -> list[list[float]]:
 
 def embed_query(text: str) -> list[float]:
     # Few retries at query time: a user is waiting; retrieval falls back to keyword search on failure.
-    return embed([text], retries=2)[0]
+    # Short timeout: if the embedding provider hangs, fall back to keyword search fast instead of after ~2 min.
+    return embed([text], retries=1, timeout=config.EMBED_QUERY_TIMEOUT_S)[0]

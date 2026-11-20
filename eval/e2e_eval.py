@@ -29,7 +29,8 @@ REFUSAL_RE = re.compile(
     r"outside (of )?(my|the|our) (data|scope)|out of scope|not (able|in a position) to (give|provide)|"
     r"can(no|')t (help|provide|give|answer)|don't have (that|this|data|information)|"
     r"no (investment|financial|legal) advice|not (financial|investment) advice|official source|"
-    r"only (answer|help) (with|questions about)|not covered|not in (my|our|the) data", re.I)
+    r"only (answer|help) (with|questions about)|not covered|not in (my|our|the) data|"
+    r"(don't|do not) have (access to|any) .{0,40}(data|information)|outside (what|the data) i", re.I)
 PROVIDER_FAIL = ("rate limit", "busy right now", "sending messages very quickly", "something went wrong")
 
 
@@ -176,6 +177,11 @@ def main() -> None:
     out_dir.mkdir(exist_ok=True)
     if a.report_only:
         rows = [json.loads(l) for l in (out_dir / f"e2e_{a.tag}.jsonl").open(encoding="utf-8") if l.strip()]
+        # Re-grade saved answers with the current grader (no LLM calls), e.g. after a grader pattern fix.
+        golden = {i["id"]: i for i in (json.loads(l) for l in (ROOT / "eval" / "golden_set.jsonl").open(encoding="utf-8") if l.strip())}
+        for r in rows:
+            if not r.get("provider_fail") and r["id"] in golden:
+                r.update(grade(golden[r["id"]], r))
     else:
         items = [json.loads(l) for l in (ROOT / "eval" / "golden_set.jsonl").open(encoding="utf-8") if l.strip()]
         if a.ids:

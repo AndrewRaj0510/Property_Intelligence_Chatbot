@@ -122,10 +122,15 @@ def finalize_node(state: ChatState) -> dict:
         bad = guardrail.unsupported_numbers(draft, [s["text"] for s in sources], state["question"])
         if bad:
             report["unsupported_numbers"] = bad
-            report["replaced"] = True
-            first = next(iter(urls), None)
-            draft = ("That information isn't published in the data I have"
-                     + (f". You can check the live page: {first}" if first else " from DarGlobal or Wasalt."))
+            # Drop only the sentences/bullets with an unsupported number; keep the rest if it still says something.
+            trimmed = guardrail.drop_unsupported(draft, [s["text"] for s in sources], state["question"])
+            if trimmed is not None:
+                draft, report["trimmed"] = trimmed, True
+            else:
+                report["replaced"] = True
+                first = next(iter(urls), None)
+                draft = ("That information isn't published in the data I have"
+                         + (f". You can check the live page: {first}" if first else " from DarGlobal or Wasalt."))
         if guardrail.leaks_system_prompt(draft, SYSTEM_PROMPT):
             report["prompt_leak"], report["replaced"] = True, True
             draft = guardrail.INJECTION_REPLY

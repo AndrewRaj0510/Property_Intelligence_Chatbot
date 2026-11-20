@@ -18,6 +18,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_MODELS = [m.strip() for m in os.getenv("OPENROUTER_MODELS", "").split(",") if m.strip()]
 EMBED_MODEL = os.getenv("OPENROUTER_EMBED_MODEL") or "nvidia/nemotron-3.5-embed-1b:free"
 EMBED_DIM = int(os.getenv("EMBED_DIM", "2048"))
+EMBED_QUERY_TIMEOUT_S = float(os.getenv("EMBED_QUERY_TIMEOUT_S", "6"))  # query-time; then keyword fallback
 
 QDRANT_URL = os.getenv("QDRANT_URL", "")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")            # read-write: ingestion only
@@ -47,3 +48,11 @@ RATE_LIMIT_TURNS = int(os.getenv("RATE_LIMIT_TURNS", "8"))      # per session ..
 RATE_LIMIT_WINDOW_S = int(os.getenv("RATE_LIMIT_WINDOW_S", "60"))  # ... per this many seconds
 RATE_LIMIT_GLOBAL_TURNS = int(os.getenv("RATE_LIMIT_GLOBAL_TURNS", "30"))  # all sessions, per minute
 LANGFUSE_ENABLED = bool(os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"))
+
+# Zero-spend guard: only OpenRouter `:free` models may ever be called (credits exist on the account only to lift
+# the free daily limit). A non-free model in the env is dropped here and never reaches the API.
+ALLOW_PAID_MODELS = os.getenv("ALLOW_PAID_MODELS", "") == "1"
+if not ALLOW_PAID_MODELS:
+    OPENROUTER_MODELS = [m for m in OPENROUTER_MODELS if m.endswith(":free")]
+    if not EMBED_MODEL.endswith(":free"):
+        EMBED_MODEL = "nvidia/nemotron-3.5-embed-1b:free"

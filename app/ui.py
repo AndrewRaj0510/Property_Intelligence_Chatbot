@@ -6,6 +6,7 @@ reaches the user), then streamed to the screen word by word. Token-level streami
 text that the guardrail may still replace, so it is deliberately not used.
 """
 import hashlib
+import html
 import json
 import logging
 import os
@@ -45,7 +46,7 @@ def _render_eval_panel() -> None:
     with st.container():  # shown inside the footer "About" expander (expanders cannot nest)
         rows = []
         for m, d in (s.get("retrieval") or {}).items():
-            if d.get("errors", 0) < d.get("n", 1):  # skip modes that could not run (quota)
+            if not d.get("errors"):  # show only modes measured cleanly (embedding outages = not measured)
                 rows.append(f"| {m} | {float(d['hit@5']):.2f} | {float(d['mrr@10']):.2f} |")
         if rows:
             st.markdown("**Retrieval**\n\n| Mode | Hit@5 | MRR |\n|---|---|---|\n" + "\n".join(rows))
@@ -91,6 +92,41 @@ _agent_loader()  # start warming as soon as the first visitor opens the page
 
 st.set_page_config(page_title="Property Intelligence Chatbot", page_icon="🏙️", layout="centered")
 
+# Hover card for per-answer cost/latency (pure CSS: no click, no JS). Opens on hover and on keyboard focus.
+st.markdown("""<style>
+.cost-badge{position:relative;display:inline-block;margin:.25rem 0 .1rem}
+.cost-badge .pill{display:inline-flex;align-items:center;gap:.35rem;padding:.15rem .6rem;border:1px solid rgba(128,128,128,.35);
+  border-radius:999px;font-size:.78rem;opacity:.8;cursor:default;user-select:none}
+.cost-badge .pill .arrow{font-size:.65rem;transition:transform .15s}
+.cost-badge:hover .pill,.cost-badge:focus-within .pill{opacity:1;border-color:#b08d57}
+.cost-badge:hover .arrow,.cost-badge:focus-within .arrow{transform:rotate(180deg)}
+.cost-badge .card{visibility:hidden;opacity:0;transition:opacity .12s;position:absolute;left:0;top:calc(100% + 6px);z-index:1000;
+  min-width:300px;padding:.6rem .8rem;border-radius:10px;font-size:.8rem;line-height:1.5;
+  background:var(--background-color,#fff);color:inherit;border:1px solid rgba(128,128,128,.35);box-shadow:0 6px 20px rgba(0,0,0,.18)}
+@media (prefers-color-scheme: dark){.cost-badge .card{background:#1e1f24}}
+.cost-badge:hover .card,.cost-badge:focus-within .card{visibility:visible;opacity:1}
+.cost-badge .card b{font-weight:600}.cost-badge .card .muted{opacity:.7}
+</style>""", unsafe_allow_html=True)
+
+
+def _cost_badge_html(c: dict, lat: dict, eq) -> str:
+    """Badge + hover card. Only numbers we formatted ourselves go in; labels are escaped anyway."""
+    esc = html.escape
+    total = float(lat.get("total", 0) or 0) / 1000
+    steps = " · ".join(f"{esc(str(k))} {float(v) / 1000:.2f} s" for k, v in lat.items() if k != "total")
+    tokens = (f"{int(c.get('prompt_tokens', 0) or 0):,} in / {int(c.get('completion_tokens', 0) or 0):,} out"
+              f" · {int(c.get('llm_calls', 0) or 0)} LLM call(s)")
+    if c.get("embedding_tokens"):
+        tokens += f" · {int(c['embedding_tokens']):,} embedding tokens"
+    cost = f"&#36;{float(c.get('actual_cost_usd', 0) or 0):.4f} actual (free models)"
+    if eq:
+        cost += f"<br><span class='muted'>&#36;{float(eq):.4f} at the paid price of the same model</span>"
+    return (f"<div class='cost-badge' tabindex='0' aria-label='Cost and latency details'>"
+            f"<span class='pill'>⏱ {total:.1f}s · cost <span class='arrow'>▼</span></span>"
+            f"<div class='card' role='tooltip'><b>Latency:</b> {total:.2f} s total"
+            + (f"<br><span class='muted'>{steps}</span>" if steps else "")
+            + f"<br><b>Tokens:</b> {tokens}<br><b>Cost:</b> {cost}</div></div>")
+
 ss = st.session_state
 ss.setdefault("session_id", uuid.uuid4().hex)
 ss.setdefault("messages", [])  # {"role", "content", "sources", "trace_id", "cost", "feedback"}
@@ -126,7 +162,7 @@ def _md_escape(text: str) -> str:
 def _stream(text: str):
     for word in text.split(" "):
         yield word + " "
-        time.sleep(0.012)
+        time.sleep(0.003)  # cosmetic typing effect only; keep it short
 
 
 def _render_extras(i: int, msg: dict) -> None:
@@ -138,18 +174,7 @@ def _render_extras(i: int, msg: dict) -> None:
         c = msg["cost"]
         lat = c.get("latency_ms", {}) or {}
         eq = c.get("equivalent_cost_usd")
-        with st.popover(f"⏱ {lat.get('total', 0) / 1000:.1f}s · cost", use_container_width=False):
-            st.markdown(f"**Latency:** {lat.get('total', 0) / 1000:.2f} s total")
-            steps = [f"{k}: {v / 1000:.2f} s" for k, v in lat.items() if k != "total"]
-            if steps:
-                st.caption(" · ".join(steps))
-            tokens = (f"**Tokens:** {c.get('prompt_tokens', 0):,} in / {c.get('completion_tokens', 0):,} out"
-                      f" · {c.get('llm_calls', 0)} LLM call(s)")
-            if c.get("embedding_tokens"):
-                tokens += f" · {c['embedding_tokens']:,} embedding tokens"
-            st.markdown(tokens)
-            st.markdown(f"**Cost:** \\${c.get('actual_cost_usd', 0):.4f} actual (free models)"
-                        + (f" · \\${eq:.4f} at the paid price of the same model" if eq else ""))
+        st.markdown(_cost_badge_html(c, lat, eq), unsafe_allow_html=True)
     if msg.get("trace_id"):
         if msg.get("feedback") is None:
             fb = st.feedback("thumbs", key=f"fb_{i}")

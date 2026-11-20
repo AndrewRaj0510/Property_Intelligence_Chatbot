@@ -4,22 +4,22 @@
    "n": 19,
    "hit@5": 0.947,
    "mrr@10": 0.929,
-   "latency_ms_p50": 259,
+   "latency_ms_p50": 260,
    "errors": 0
   },
   "semantic": {
    "n": 19,
-   "hit@5": 0.0,
-   "mrr@10": 0.0,
-   "latency_ms_p50": 2290,
-   "errors": 19
+   "hit@5": 0.211,
+   "mrr@10": 0.175,
+   "latency_ms_p50": 2873,
+   "errors": 15
   },
   "hybrid": {
    "n": 19,
-   "hit@5": 0.0,
-   "mrr@10": 0.0,
-   "latency_ms_p50": 2786,
-   "errors": 19
+   "hit@5": 0.263,
+   "mrr@10": 0.224,
+   "latency_ms_p50": 3220,
+   "errors": 14
   }
  },
  "items": [
@@ -120,7 +120,7 @@
    "top3": [
     "darglobal:trump-tower-jeddah",
     "darglobal:trump-international-hotel-tower-dubai",
-    "darglobal:trump-park-residences"
+    "darglobal:trump-executive-residences"
    ]
   },
   {
@@ -246,8 +246,12 @@
   {
    "id": "q11",
    "mode": "semantic",
-   "rank": null,
-   "top3": []
+   "rank": 1,
+   "top3": [
+    "darglobal:les-vagues",
+    "darglobal:trump-international-simaisma-qatar",
+    "darglobal:darglobal-mansions-fendi-casa"
+   ]
   },
   {
    "id": "q12",
@@ -258,8 +262,12 @@
   {
    "id": "q13",
    "mode": "semantic",
-   "rank": null,
-   "top3": []
+   "rank": 1,
+   "top3": [
+    "darglobal:neptune-interiors-by-mouawad",
+    "darglobal:darglobal-mansions-fendi-casa",
+    "darglobal:trump-executive-residences"
+   ]
   },
   {
    "id": "q14",
@@ -276,8 +284,12 @@
   {
    "id": "q16",
    "mode": "semantic",
-   "rank": null,
-   "top3": []
+   "rank": 1,
+   "top3": [
+    "darglobal:dg1",
+    "darglobal:d-villas-at-jumeirah-golf-estates",
+    "darglobal:the-pagani-penthouse"
+   ]
   },
   {
    "id": "q17",
@@ -288,8 +300,12 @@
   {
    "id": "q18",
    "mode": "semantic",
-   "rank": null,
-   "top3": []
+   "rank": 3,
+   "top3": [
+    "darglobal:company:faq",
+    "darglobal:company:about",
+    "darglobal:company:get-in-touch"
+   ]
   },
   {
    "id": "q19",
@@ -336,8 +352,12 @@
   {
    "id": "q07",
    "mode": "hybrid",
-   "rank": null,
-   "top3": []
+   "rank": 1,
+   "top3": [
+    "darglobal:azure-oceanfront-villas-interiors-by-fendi-casa",
+    "darglobal:darglobal-mansions-fendi-casa",
+    "darglobal:fairway-villas"
+   ]
   },
   {
    "id": "q08",
@@ -360,8 +380,12 @@
   {
    "id": "q11",
    "mode": "hybrid",
-   "rank": null,
-   "top3": []
+   "rank": 1,
+   "top3": [
+    "darglobal:les-vagues",
+    "darglobal:trump-international-simaisma-qatar",
+    "darglobal:azure-oceanfront-villas-interiors-by-fendi-casa"
+   ]
   },
   {
    "id": "q12",
@@ -372,8 +396,12 @@
   {
    "id": "q13",
    "mode": "hybrid",
-   "rank": null,
-   "top3": []
+   "rank": 1,
+   "top3": [
+    "darglobal:neptune-interiors-by-mouawad",
+    "darglobal:padel-living-residences",
+    "darglobal:darglobal-mansions-fendi-casa"
+   ]
   },
   {
    "id": "q14",
@@ -390,8 +418,12 @@
   {
    "id": "q16",
    "mode": "hybrid",
-   "rank": null,
-   "top3": []
+   "rank": 1,
+   "top3": [
+    "darglobal:dg1",
+    "darglobal:trump-international-hotel-tower-dubai",
+    "darglobal:the-pagani-penthouse"
+   ]
   },
   {
    "id": "q17",
@@ -402,8 +434,12 @@
   {
    "id": "q18",
    "mode": "hybrid",
-   "rank": null,
-   "top3": []
+   "rank": 4,
+   "top3": [
+    "darglobal:company:faq",
+    "darglobal:company:about",
+    "darglobal:company:why-invest"
+   ]
   },
   {
    "id": "q19",

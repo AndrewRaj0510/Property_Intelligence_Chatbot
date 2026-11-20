@@ -31,8 +31,24 @@ _INJECTION = re.compile(
     r"|disregard (the |your |all )?(system|previous|above|prior)"
     r"|(reveal|print|show|repeat|output|leak) (me )?(your |the )?(system prompt|instructions|hidden prompt|api key)"
     r"|you are now |act as (an? )?(unrestricted|jailbroken|dan)\b|developer mode"
-    r"|</?(system|assistant|user|tool_data)>|\[/?INST\]|<\|im_(start|end)\|>",
+    r"|</?(system|assistant|user|tool_data)>|\[/?INST\]|<\|im_(start|end)\|>"
+    # prompt / internals extraction
+    r"|(repeat|print|output|copy) (everything|all|the text|what'?s?) (above|before|previous)"
+    r"|\bverbatim\b.{0,40}\b(instructions|prompt|rules|above)\b"
+    r"|(source|python) code|(your|the) (tools?'?|internal|backend) (code|implementation|source)"
+    r"|(api|secret|access) keys?\b|environment variables|\.env\b",
     re.I)
+# Requests for personal data of private individuals (agents, brokers, owners): never collected, always refused.
+_PERSONAL_DATA = re.compile(
+    r"(names?|phone|mobile|whatsapp|numbers?|emails?|contacts?|contact details)\b.{0,40}"
+    r"\b(agents?|brokers?|owners?|landlords?|sellers?|realtors?)\b"
+    r"|\b(agents?|brokers?|owners?|landlords?|sellers?)'?s?\b.{0,20}\b(phone|mobile|whatsapp|numbers?|emails?|contact)",
+    re.I)
+
+
+def asks_personal_data(text: str) -> bool:
+    # DarGlobal's own public role contacts (sales/agents mailbox, offices) are company data, not personal data.
+    return bool(_PERSONAL_DATA.search(text)) and "darglobal" not in text.lower()
 _CONTROL = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f​-‏‪-‮⁠-⁤⁦-⁩﻿]")
 _HTML = re.compile(r"<\s*(script|style|iframe)[^>]*>.*?<\s*/\s*\1\s*>|<!--.*?-->", re.I | re.S)
 

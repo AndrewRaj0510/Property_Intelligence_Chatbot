@@ -57,6 +57,33 @@ def unsupported_numbers(answer: str, evidence: list[str], question: str) -> list
     return bad
 
 
+_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z*(\[])")
+MIN_KEPT_CHARS = 60
+
+
+def drop_unsupported(answer: str, evidence: list[str], question: str) -> str | None:
+    """Remove each line (bullet / table row) or sentence that states an unsupported number.
+    Returns the trimmed answer, or None if too little substance is left (caller then refuses)."""
+    def ok(text: str) -> bool:
+        return not unsupported_numbers(text, evidence, question)
+
+    out_lines = []
+    for line in answer.split("\n"):
+        if ok(line):
+            out_lines.append(line)
+            continue
+        if _LIST_MARKER.match(line) or line.lstrip().startswith("|"):
+            continue  # whole bullet / table row goes
+        kept = [s for s in _SENTENCE_SPLIT.split(line) if ok(s)]
+        if kept:
+            out_lines.append(" ".join(kept))
+    trimmed = re.sub(r"\n{3,}", "\n\n", "\n".join(out_lines)).strip()
+    prose = _URL.sub("", trimmed)
+    if len(re.sub(r"[\W_]+", "", prose)) < MIN_KEPT_CHARS or not ok(trimmed):
+        return None
+    return trimmed
+
+
 def cited_urls(answer: str) -> list[str]:
     return [u.rstrip(".,;") for u in _URL.findall(answer)]
 
@@ -93,6 +120,8 @@ def strip_unknown_urls(answer: str, source_urls: set[str]) -> tuple[str, list[st
 MAX_QUESTION_CHARS = 1000
 INJECTION_REPLY = ("I can only help with questions about DarGlobal projects, the company, its news, "
                    "and the Wasalt listings in my data.")
+PERSONAL_DATA_REPLY = ("I don't collect or share personal details of agents, brokers or owners. Each listing's "
+                       "page on Wasalt shows how to get in touch; I can give you the listing links.")
 TOO_LONG_REPLY = f"Please keep your question under {MAX_QUESTION_CHARS} characters."
 
 
@@ -105,6 +134,8 @@ def check_input(question: str) -> tuple[str, str | None]:
         return q, TOO_LONG_REPLY
     if security.has_injection(q):
         return q, INJECTION_REPLY
+    if security.asks_personal_data(q):
+        return q, PERSONAL_DATA_REPLY
     return q, None
 
 

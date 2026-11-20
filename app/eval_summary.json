@@ -4,23 +4,41 @@
    "n": 19,
    "hit@5": 0.947,
    "mrr@10": 0.929,
-   "latency_ms_p50": 259,
+   "latency_ms_p50": 260,
    "errors": 0
   },
   "semantic": {
    "n": 19,
-   "hit@5": 0.0,
-   "mrr@10": 0.0,
-   "latency_ms_p50": 2290,
-   "errors": 19
+   "hit@5": 0.211,
+   "mrr@10": 0.175,
+   "latency_ms_p50": 2873,
+   "errors": 15
   },
   "hybrid": {
    "n": 19,
-   "hit@5": 0.0,
-   "mrr@10": 0.0,
-   "latency_ms_p50": 2786,
-   "errors": 19
+   "hit@5": 0.263,
+   "mrr@10": 0.224,
+   "latency_ms_p50": 3220,
+   "errors": 14
   }
  },
- "updated": "2026-11-19"
+ "updated": "2026-11-20",
+ "e2e": {
+  "tag": "after_fix",
+  "questions": 36,
+  "completed": 36,
+  "provider_failures": 0,
+  "correct": 1.0,
+  "tool_ok": 1.0,
+  "citation_valid": 0.964,
+  "refusal_ok": 1.0,
+  "leak_free": 1.0,
+  "latency_s_p50": 7.1,
+  "latency_s_p95": 20.2,
+  "tokens_avg": 7430,
+  "tokens_p95": 15420,
+  "llm_calls_avg": 2.03,
+  "actual_cost_per_1k_usd": 0.0,
+  "equiv_cost_per_1k_usd": 1.2867
+ }
 }
