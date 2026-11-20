@@ -109,11 +109,20 @@ def strip_active_markup(answer: str) -> tuple[str, int]:
 
 
 def strip_unknown_urls(answer: str, source_urls: set[str]) -> tuple[str, list[str]]:
-    """Remove links the tools never returned (hallucinated or injected, e.g. phishing). Returns (answer, removed)."""
-    bad = unknown_urls(answer, source_urls)
-    for u in sorted(set(bad), key=len, reverse=True):
-        answer = answer.replace(u, "[link removed]")
-    return answer, bad
+    """Remove links the tools never returned (hallucinated or injected, e.g. phishing). Returns (answer, removed).
+    Each URL token is checked on its own: a plain str.replace of an unknown prefix (e.g. a link cut off at the
+    token limit, "https://darglobal.co.uk") would also break every valid link that starts with it."""
+    known = {s.rstrip("/") for s in source_urls}
+    bad: list[str] = []
+
+    def _sub(m: re.Match) -> str:
+        url = m.group(0)
+        core = url.rstrip(".,;")
+        if core.rstrip("/") in known:
+            return url
+        bad.append(core)
+        return "[link removed]" + url[len(core):]
+    return _URL.sub(_sub, answer), bad
 
 
 # ------------------------------------------------------------------ input / injection guardrails

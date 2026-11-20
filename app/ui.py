@@ -7,7 +7,6 @@ text that the guardrail may still replace, so it is deliberately not used.
 """
 import hashlib
 import html
-import json
 import logging
 import os
 import re
@@ -32,35 +31,6 @@ EXAMPLES = [
     "What amenities does Marriott Residences Aida, Oman offer?",
     "What's the weather in Riyadh?",
 ]
-
-def _pct(v) -> str:
-    return "n/a" if v is None else f"{float(v):.0%}"
-
-
-def _render_eval_panel() -> None:
-    """Latest offline eval (Phase 5): aggregate numbers only, from app/eval_summary.json."""
-    try:
-        s = json.loads((Path(__file__).with_name("eval_summary.json")).read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001 - no eval run yet, or unreadable: hide the panel
-        return
-    with st.container():  # shown inside the footer "About" expander (expanders cannot nest)
-        rows = []
-        for m, d in (s.get("retrieval") or {}).items():
-            if not d.get("errors"):  # show only modes measured cleanly (embedding outages = not measured)
-                rows.append(f"| {m} | {float(d['hit@5']):.2f} | {float(d['mrr@10']):.2f} |")
-        if rows:
-            st.markdown("**Retrieval**\n\n| Mode | Hit@5 | MRR |\n|---|---|---|\n" + "\n".join(rows))
-        e = s.get("e2e")
-        if e and e.get("completed"):
-            st.markdown(
-                f"**End-to-end** ({int(e['completed'])} questions)\n\n"
-                f"- Correct: {_pct(e.get('correct'))}\n- Valid citations: {_pct(e.get('citation_valid'))}\n"
-                f"- Correct refusals: {_pct(e.get('refusal_ok'))}\n- Leak-free: {_pct(e.get('leak_free'))}\n"
-                f"- Latency p50 / p95: {e.get('latency_s_p50')} / {e.get('latency_s_p95')} s\n"
-                f"- Equivalent paid cost: ${float(e.get('equiv_cost_per_1k_usd') or 0):.2f} per 1,000 queries "
-                f"(actual: ${float(e.get('actual_cost_per_1k_usd') or 0):.2f}, free models)")
-        st.caption(f"Offline eval, updated {str(s.get('updated', ''))[:10]}")
-
 
 @st.cache_resource(show_spinner=False)
 def _agent_loader() -> dict:
@@ -102,10 +72,9 @@ st.markdown("""<style>
 .cost-badge:hover .arrow,.cost-badge:focus-within .arrow{transform:rotate(180deg)}
 .cost-badge .card{visibility:hidden;opacity:0;transition:opacity .12s;position:absolute;left:0;top:calc(100% + 6px);z-index:1000;
   min-width:300px;padding:.6rem .8rem;border-radius:10px;font-size:.8rem;line-height:1.5;
-  background:var(--background-color,#fff);color:inherit;border:1px solid rgba(128,128,128,.35);box-shadow:0 6px 20px rgba(0,0,0,.18)}
-@media (prefers-color-scheme: dark){.cost-badge .card{background:#1e1f24}}
+  background:#fffdf8;color:#31333f;border:1px solid #b08d57;box-shadow:0 6px 20px rgba(0,0,0,.18)}
 .cost-badge:hover .card,.cost-badge:focus-within .card{visibility:visible;opacity:1}
-.cost-badge .card b{font-weight:600}.cost-badge .card .muted{opacity:.7}
+.cost-badge .card b{font-weight:600;color:#7a5c2e}.cost-badge .card .muted{color:#6b6f7b}
 </style>""", unsafe_allow_html=True)
 
 
@@ -221,8 +190,6 @@ if prompt:
     st.rerun()  # re-render so sources and feedback widgets appear under the answer
 
 st.divider()
-with st.expander("About this chatbot and evaluation results"):
-    st.caption("Answers come only from scraped DarGlobal project/company pages and a Wasalt (KSA) listings "
-               "sample. Not investment advice.")
-    _render_eval_panel()
+st.caption("Answers come only from scraped DarGlobal project/company pages and a Wasalt (KSA) listings "
+           "sample. Not investment advice.")
 st.caption(f"Data as of {config.SNAPSHOT_DATE} · sources: darglobal.co.uk, wasalt.sa (sitemap sample)")

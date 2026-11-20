@@ -228,6 +228,9 @@ plan.md
 architecture.md
 product_requirement_document.md
 
+# Submission documents (report, walkthrough, screenshots): shared directly, not in the repo
+docs/
+
 # Local context and logs for Claude Code sessions
 CLAUDE.md
 memory.md

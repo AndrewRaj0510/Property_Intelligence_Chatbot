@@ -39,6 +39,16 @@ def test_unknown_urls_stripped():
     assert bad == ["https://evil.example/pay"] and "evil" not in ans and "darglobal.co.uk/a" in ans
 
 
+def test_unknown_url_prefix_does_not_break_valid_links():
+    # Answer cut off at the token limit inside a link: the fragment is removed, valid links stay intact.
+    src = {"https://darglobal.co.uk/trump-tower-jeddah"}
+    draft = ("Tower ([https://darglobal.co.uk/trump-tower-jeddah](https://darglobal.co.uk/trump-tower-jeddah)). "
+             "Pool ([https://darglobal.co.uk")
+    ans, bad = guardrail.strip_unknown_urls(draft, src)
+    assert bad == ["https://darglobal.co.uk"]
+    assert ans.count("https://darglobal.co.uk/trump-tower-jeddah") == 2 and ans.endswith("([[link removed]")
+
+
 def test_allowlist():
     assert security.is_allowed_url("https://darglobal.co.uk/x")
     assert security.is_allowed_url("https://www.wasalt.sa/en/property/1")
