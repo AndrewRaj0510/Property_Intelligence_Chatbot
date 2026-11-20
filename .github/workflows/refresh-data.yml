@@ -1,0 +1,70 @@
+# Re-scrape DarGlobal + Wasalt every 3 days, rebuild SQLite/chunks/Qdrant, and open a PR with
+# the refreshed data snapshot (nothing is pushed to main directly).
+# Note: "*/3" in the day-of-month field restarts each month (e.g. runs on the 31st and then the 1st).
+name: Refresh data
+
+on:
+  schedule:
+    - cron: "0 2 */3 * *"   # 02:00 UTC on days 1, 4, 7, ... of each month
+  workflow_dispatch:         # manual "Run workflow" button
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_EMBED_MODEL: ${{ secrets.OPENROUTER_EMBED_MODEL }}
+      QDRANT_URL: ${{ secrets.QDRANT_URL }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+      # Must match the deployed app's key, or every retrieved chunk fails the integrity check.
+      INDEX_SIGNING_KEY: ${{ secrets.INDEX_SIGNING_KEY }}
+    steps:
+      - name: Check required secrets
+        run: |
+          for v in OPENROUTER_API_KEY QDRANT_URL QDRANT_API_KEY INDEX_SIGNING_KEY; do
+            [ -n "${!v}" ] || { echo "::error::secret $v is not set"; exit 1; }
+          done
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Embedding cache: only new or changed chunks are re-embedded (free-tier rate limits).
+      - uses: actions/cache@v4
+        with:
+          path: data/.cache
+          key: embeddings-${{ github.run_id }}
+          restore-keys: embeddings-
+
+      - name: Scrape, normalize, rebuild
+        run: python scripts/refresh_data.py
+
+      - name: Open PR with refreshed data
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: data-refresh
+          delete-branch: true
+          commit-message: "data: scheduled refresh"
+          title: "Scheduled data refresh"
+          body: "Automated re-scrape of DarGlobal and Wasalt (every 3 days). See `data/clean/data_report.md` for counts."
+          add-paths: |
+            data/raw/*.jsonl
+            data/raw/wasalt_sample_manifest.txt
+            data/clean/
+            data/listings.db
+            data/chunks.jsonl
+            data/index_stats.json

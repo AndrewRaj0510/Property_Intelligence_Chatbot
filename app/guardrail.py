@@ -29,15 +29,17 @@ def _values(text: str) -> set[float]:
     return out
 
 
-def answer_numbers(answer: str) -> list[tuple[str, float]]:
-    """Numbers stated in the answer (URLs and list markers ignored). Value with multiplier applied."""
+def answer_numbers(answer: str) -> list[tuple[str, set[float]]]:
+    """Numbers stated in the answer (URLs and list markers ignored), each with its candidate values:
+    the raw value and, if a suffix follows, the multiplied one ("130 m" may be metres or million)."""
     text = _LIST_MARKER.sub("", _URL.sub(" ", answer))
     found = []
     for m in _NUM.finditer(text):
-        v = float(m.group(1).replace(",", ""))
+        raw = float(m.group(1).replace(",", ""))
+        vals = {round(raw, 2)}
         if m.group(2):
-            v *= _MULT[m.group(2).lower()]
-        found.append((m.group(0).strip(), round(v, 2)))
+            vals.add(round(raw * _MULT[m.group(2).lower()], 2))
+        found.append((m.group(0).strip(), vals))
     return found
 
 
@@ -46,11 +48,11 @@ def unsupported_numbers(answer: str, evidence: list[str], question: str) -> list
     for e in evidence:
         allowed |= _values(e)
     bad = []
-    for raw, v in answer_numbers(answer):
-        # Numbers 0-10 are allowed: ordinals, "two of them" style counts of shown rows, step numbers.
-        if v <= 10 and float(v).is_integer():
+    for raw, vals in answer_numbers(answer):
+        # Integers 0-10 are allowed: ordinals, "two of them" style counts of shown rows, step numbers.
+        if any(v <= 10 and float(v).is_integer() for v in vals):
             continue
-        if v not in allowed:
+        if not vals & allowed:
             bad.append(raw)
     return bad
 

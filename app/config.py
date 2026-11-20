@@ -26,7 +26,18 @@ QDRANT_READ_API_KEY = os.getenv("QDRANT_READ_API_KEY", "") or QDRANT_API_KEY
 QDRANT_TIMEOUT_S = int(os.getenv("QDRANT_TIMEOUT_S", "10"))
 COLLECTION = os.getenv("QDRANT_COLLECTION", "property_kb")
 
-SNAPSHOT_DATE = os.getenv("DATA_SNAPSHOT_DATE", "18-19 Nov 2026")
+def _snapshot_date() -> str:
+    """Env override, else the date written by scripts/refresh_data.py, else the first snapshot."""
+    if os.getenv("DATA_SNAPSHOT_DATE"):
+        return os.environ["DATA_SNAPSHOT_DATE"]
+    try:
+        import json
+        return json.loads((DATA_DIR / "index_stats.json").read_text())["snapshot_date"]
+    except (OSError, ValueError, KeyError):
+        return "18-19 Nov 2026"
+
+
+SNAPSHOT_DATE = _snapshot_date()
 MAX_TOOL_ROUNDS = 3
 HISTORY_TURNS = 6
 HISTORY_MSG_CHARS = 1200      # older assistant answers are truncated in history

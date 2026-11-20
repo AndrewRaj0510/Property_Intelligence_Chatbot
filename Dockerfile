@@ -1,8 +1,7 @@
 # Property Intelligence Chatbot: Streamlit + LangGraph. Fits Render free tier (512 MB RAM).
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
+ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
@@ -11,12 +10,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+# Precompile bytecode at build time so cold starts on 0.1 CPU don't recompile every library.
+RUN pip install -r requirements.txt \
+    && python -m compileall -q /usr/local/lib/python3.11/site-packages
 
 # Runtime needs only the app code and the SQLite listings snapshot (vectors live in Qdrant Cloud).
 COPY app/ app/
 COPY .streamlit/ .streamlit/
 COPY data/listings.db data/listings.db
+RUN python -m compileall -q app
 
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser /app
 USER appuser

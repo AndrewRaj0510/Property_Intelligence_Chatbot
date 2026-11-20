@@ -3,8 +3,8 @@
   "dim": 2048,
   "avgdl": 77.96,
   "embed_model": "nvidia/nemotron-3.5-embed-1b:free",
-  "embed_calls": 1,
-  "embed_tokens": 3140,
-  "seconds": 87.3,
-  "signed": "sha256"
+  "embed_calls": 0,
+  "embed_tokens": 0,
+  "seconds": 95.2,
+  "signed": "hmac"
 }

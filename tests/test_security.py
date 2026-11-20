@@ -29,6 +29,8 @@ def test_number_guardrail():
     assert guardrail.unsupported_numbers("Price SAR 2.5M", ["price 2,500,000"], "q") == []
     assert guardrail.unsupported_numbers("Area 4,000 sqm", ["area 350 sqm"], "q") == ["4,000"]
     assert guardrail.unsupported_numbers("see https://x.sa/12345678", [], "q") == []
+    assert guardrail.unsupported_numbers("a 130 m beach", ["130 m of beachfront"], "q") == []  # metres, not million
+    assert guardrail.unsupported_numbers("a 130 m beach", ["no numbers"], "q") == ["130 m"]
 
 
 def test_unknown_urls_stripped():

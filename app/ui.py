@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import sys
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -20,7 +21,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # `streamlit ru
 import streamlit as st  # noqa: E402
 
 from app import config  # noqa: E402
-from app.graph import run_turn  # noqa: E402
 from app.observability import flush, score_trace  # noqa: E402
 
 EXAMPLES = [
@@ -42,7 +42,7 @@ def _render_eval_panel() -> None:
         s = json.loads((Path(__file__).with_name("eval_summary.json")).read_text(encoding="utf-8"))
     except Exception:  # noqa: BLE001 - no eval run yet, or unreadable: hide the panel
         return
-    with st.expander("Evaluation results"):
+    with st.container():  # shown inside the footer "About" expander (expanders cannot nest)
         rows = []
         for m, d in (s.get("retrieval") or {}).items():
             if d.get("errors", 0) < d.get("n", 1):  # skip modes that could not run (quota)
@@ -61,6 +61,34 @@ def _render_eval_panel() -> None:
         st.caption(f"Offline eval, updated {str(s.get('updated', ''))[:10]}")
 
 
+@st.cache_resource(show_spinner=False)
+def _agent_loader() -> dict:
+    """Import the agent stack (LangGraph, OpenAI, Qdrant, Langfuse: several seconds on Render's 0.1 CPU) in a
+    background thread, once per process, so the page renders immediately instead of after the imports."""
+    box: dict = {"ready": threading.Event()}
+
+    def load() -> None:
+        try:
+            from app.graph import run_turn
+            box["run_turn"] = run_turn
+        except Exception:  # noqa: BLE001
+            logging.getLogger("ui").exception("agent import failed")
+        finally:
+            box["ready"].set()
+    threading.Thread(target=load, daemon=True, name="agent-warmup").start()
+    return box
+
+
+def run_turn(*args, **kwargs) -> dict:
+    box = _agent_loader()
+    box["ready"].wait(timeout=180)
+    if "run_turn" not in box:
+        raise RuntimeError("agent not loaded")
+    return box["run_turn"](*args, **kwargs)
+
+
+_agent_loader()  # start warming as soon as the first visitor opens the page
+
 st.set_page_config(page_title="Property Intelligence Chatbot", page_icon="🏙️", layout="centered")
 
 ss = st.session_state
@@ -68,20 +96,11 @@ ss.setdefault("session_id", uuid.uuid4().hex)
 ss.setdefault("messages", [])  # {"role", "content", "sources", "trace_id", "cost", "feedback"}
 ss.setdefault("pending", None)
 
-with st.sidebar:
-    st.header("Settings")
-    mode = st.radio("Retrieval mode", ["hybrid", "semantic", "keyword"], index=0,
-                    help="Hybrid = dense embeddings + BM25 sparse, fused with RRF.")
-    show_cost = st.toggle("Show cost and latency per answer", value=False)
-    if st.button("New conversation", use_container_width=True):
-        ss.messages, ss.pending, ss.session_id = [], None, uuid.uuid4().hex
-        st.rerun()
-    st.caption("Answers come only from scraped DarGlobal project/company pages and a Wasalt (KSA) listings "
-               "sample. Not investment advice.")
-    _render_eval_panel()
-
 st.title("🏙️ Property Intelligence Chatbot")
 st.caption("Ask about DarGlobal projects, the company, its news, or Wasalt listings in Saudi Arabia.")
+if ss.messages and st.button("🔄 New conversation"):
+    ss.messages, ss.pending, ss.session_id = [], None, uuid.uuid4().hex
+    st.rerun()
 
 
 def _client_key() -> str | None:
@@ -115,13 +134,22 @@ def _render_extras(i: int, msg: dict) -> None:
         with st.expander(f"Sources ({len(msg['sources'])})"):
             for s in msg["sources"]:
                 st.markdown(f"- [{_md_escape(str(s.get('title') or s['url'])[:120])}]({s['url']})")
-    if show_cost and msg.get("cost"):
+    if msg.get("cost"):
         c = msg["cost"]
+        lat = c.get("latency_ms", {}) or {}
         eq = c.get("equivalent_cost_usd")
-        st.caption(f"{c.get('llm_calls', 0)} LLM calls · {c.get('prompt_tokens', 0)}+{c.get('completion_tokens', 0)} "
-                   f"tokens · ${c.get('actual_cost_usd', 0):.4f} actual"
-                   + (f" (${eq:.4f} at paid price)" if eq else "")
-                   + f" · {c.get('latency_ms', {}).get('total', 0) / 1000:.1f}s")
+        with st.popover(f"⏱ {lat.get('total', 0) / 1000:.1f}s · cost", use_container_width=False):
+            st.markdown(f"**Latency:** {lat.get('total', 0) / 1000:.2f} s total")
+            steps = [f"{k}: {v / 1000:.2f} s" for k, v in lat.items() if k != "total"]
+            if steps:
+                st.caption(" · ".join(steps))
+            tokens = (f"**Tokens:** {c.get('prompt_tokens', 0):,} in / {c.get('completion_tokens', 0):,} out"
+                      f" · {c.get('llm_calls', 0)} LLM call(s)")
+            if c.get("embedding_tokens"):
+                tokens += f" · {c['embedding_tokens']:,} embedding tokens"
+            st.markdown(tokens)
+            st.markdown(f"**Cost:** \\${c.get('actual_cost_usd', 0):.4f} actual (free models)"
+                        + (f" · \\${eq:.4f} at the paid price of the same model" if eq else ""))
     if msg.get("trace_id"):
         if msg.get("feedback") is None:
             fb = st.feedback("thumbs", key=f"fb_{i}")
@@ -157,7 +185,7 @@ if prompt:
     with st.chat_message("assistant"):
         with st.spinner("Searching projects and listings..."):
             try:
-                r = run_turn(prompt, history=history, session_id=ss.session_id, user_id=_client_key(), mode=mode)
+                r = run_turn(prompt, history=history, session_id=ss.session_id, user_id=_client_key())
             except Exception:  # noqa: BLE001 - never show a stack trace to the user; server log only
                 logging.getLogger("ui").exception("run_turn failed")
                 r = {"answer": "Sorry, something went wrong on my side. Please try again in a moment."}
@@ -168,4 +196,8 @@ if prompt:
     st.rerun()  # re-render so sources and feedback widgets appear under the answer
 
 st.divider()
+with st.expander("About this chatbot and evaluation results"):
+    st.caption("Answers come only from scraped DarGlobal project/company pages and a Wasalt (KSA) listings "
+               "sample. Not investment advice.")
+    _render_eval_panel()
 st.caption(f"Data as of {config.SNAPSHOT_DATE} · sources: darglobal.co.uk, wasalt.sa (sitemap sample)")
