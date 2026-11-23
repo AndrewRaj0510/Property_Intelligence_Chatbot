@@ -3,8 +3,9 @@
   "dim": 2048,
   "avgdl": 77.96,
   "embed_model": "nvidia/nemotron-3.5-embed-1b:free",
-  "embed_calls": 0,
-  "embed_tokens": 0,
-  "seconds": 95.2,
-  "signed": "hmac"
+  "embed_calls": 23,
+  "embed_tokens": 125279,
+  "seconds": 33.9,
+  "signed": "hmac",
+  "snapshot_date": "23 Nov 2026"
 }
