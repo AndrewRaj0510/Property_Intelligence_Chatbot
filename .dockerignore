@@ -18,6 +18,7 @@ wake/
 *.md
 eval/
 docs/
+assets/
 .streamlit/secrets.toml
 *.jsonl
 *.log
