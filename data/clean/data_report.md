@@ -1,6 +1,6 @@
 # Data quality report
 
-Scraped at: 2026-11-23T07:35:00+00:00
+Scraped at: 2026-11-28T09:30:41+00:00
 
 ## Counts
 
@@ -13,7 +13,7 @@ Scraped at: 2026-11-23T07:35:00+00:00
 
 ## DarGlobal company pages
 
-24 pages, 120,414 chars, 31 FAQ pairs. Pages: about, partners, get-in-touch, faq, why-invest, hospitality, development-management, luxury-golf-communities, investor, commercial, partners/aston-martin, partners/elie-saab, partners/fendi-casa, partners/lamborghini, partners/marriott-residences-aida-oman, partners/missoni, partners/mouawad, partners/pagani, partners/paramount, partners/the-trump-organization, partners/w-hotels, Invest-crypto, exclusive-plots, invest-in-aida
+24 pages, 120,508 chars, 31 FAQ pairs. Pages: about, partners, get-in-touch, faq, why-invest, hospitality, development-management, luxury-golf-communities, investor, commercial, partners/aston-martin, partners/elie-saab, partners/fendi-casa, partners/lamborghini, partners/marriott-residences-aida-oman, partners/missoni, partners/mouawad, partners/pagani, partners/paramount, partners/the-trump-organization, partners/w-hotels, Invest-crypto, exclusive-plots, invest-in-aida
 
 ## DarGlobal news (Q1-Q3 2026)
 
